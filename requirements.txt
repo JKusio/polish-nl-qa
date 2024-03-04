@@ -1,0 +1,8 @@
+torch
+numpy
+torchvision
+torchaudio
+mlx # used for macos
+jupyterlab
+ipywidgets
+transformers
