@@ -6,3 +6,5 @@ mlx # used for macos
 jupyterlab
 ipywidgets
 transformers
+datasets
+accelerate

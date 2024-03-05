@@ -5,4 +5,8 @@ setup:
 	env/bin/pip install -r requirements.txt
 	@echo "Requirements installed"
 
+install:
+	env/bin/pip install -r requirements.txt
+	@echo "Requirements installed"
+
 .PHONY: setup
