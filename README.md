@@ -36,3 +36,16 @@ source env/bin/activate
 
 This will install all required dependencies and make the project and tools ready to use.
 It will also instal the `mlx` package which is optional, but can be used on MacOS for better performance.
+
+### Installing ElasticSearch and Qdrant
+
+To start working with ES and QDrant install `docker/docker-composer` on your system and then run the following command:
+```bash
+docker-compose up -d
+```
+
+or 
+
+```bash
+make up
+```

@@ -9,4 +9,7 @@ install:
 	env/bin/pip install -r requirements.txt
 	@echo "Requirements installed"
 
+up:
+	docker-compose up -d
+
 .PHONY: setup
