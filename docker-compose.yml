@@ -8,5 +8,12 @@ services:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.12.2
     environment:
       - discovery.type=single-node
+      - xpack.security.enabled=false
     ports:
       - 9200:9200
+    command:
+      - /bin/bash
+      - -c
+      - |
+        bin/elasticsearch-plugin install analysis-stempel
+        bin/elasticsearch
