@@ -10,3 +10,4 @@ datasets
 accelerate
 qdrant-client
 elasticsearch
+python-dotenv
