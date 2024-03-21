@@ -5,9 +5,10 @@ torchaudio
 mlx # used for macos
 jupyterlab
 ipywidgets
-transformers
+transformers==4.38.1
 datasets
 accelerate
 qdrant-client
 elasticsearch
 python-dotenv
+evaluate
