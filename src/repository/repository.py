@@ -1,13 +1,13 @@
 from abc import ABC, abstractmethod
-from common.document import Document
+from common.passage import Passage
 
 class Repository(ABC): 
     @abstractmethod
-    def insertOne(self, data: Document):
+    def insertOne(self, data: Passage):
         pass
 
     @abstractmethod
-    def insertMany(self, data: list[Document]):
+    def insertMany(self, data: list[Passage]):
         pass
 
     @abstractmethod

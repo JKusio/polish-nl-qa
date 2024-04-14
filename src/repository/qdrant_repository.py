@@ -23,14 +23,14 @@ class QdrantRepository(Repository):
     def insertOne(self, passage: Passage):
         return self.qdrant.upsert(
             collection_name=self.collection_name,
-            wait=True,
+            wait=False,
             points=[
                 PointStruct(id=passage.id, vector=self.vectorizer.get_vector(passage.text), payload=passage.dict())
             ]
         )
     
-    def insertMany(self, data: list[Passage]):
-        points = data.map(lambda passage: PointStruct(id=passage.id, vector=self.vectorizer.get_vector(passage.text), payload=passage.dict()))
+    def insertMany(self, passages: list[Passage]):
+        points = list(map(lambda passage: PointStruct(id=passage.id, vector=self.vectorizer.get_vector(passage.text), payload=passage.dict()), passages))
 
         return self.qdrant.upsert(
             collection_name=self.collection_name,
@@ -38,8 +38,13 @@ class QdrantRepository(Repository):
             points=points
         )
 
-    def find(self, query):
-        return self.qdrant.search(query)
+    def find(self, query: str):
+        vector = self.vectorizer.get_vector(query)
+
+        return self.qdrant.search(
+            collection_name=self.collection_name,
+            query_vector=vector
+        )
 
     def delete(self, query):
         return self.qdrant.delete(query)
