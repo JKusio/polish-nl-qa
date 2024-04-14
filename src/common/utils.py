@@ -8,4 +8,4 @@ def get_passages_for_embedding(dataset):
     return list(map(lambda row: Passage(generate_id(), row[1], row[0]), unique_contexts))
 
 def generate_id(): 
-    str(uuid.uuid4())
+    return str(uuid.uuid4())

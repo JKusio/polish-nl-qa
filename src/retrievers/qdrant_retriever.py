@@ -5,5 +5,7 @@ class QdrantRetriever(Retriever):
     def __init__(self, repository: Repository):
         self.repository = repository
 
-    def get_relevant_docs(self, query: str):
-        return self.repository.find(query)
+    def get_relevant_passages(self, query: str) -> list[str]:
+        passages = self.repository.find(query)
+
+        return list(map(lambda passage: passage.text, passages))

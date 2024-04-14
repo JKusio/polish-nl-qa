@@ -1,7 +1,8 @@
+from re import L
 from common.passage import Passage
 from repository.repository import Repository
 from qdrant_client import QdrantClient
-from qdrant_client.models import VectorParams, PointStruct
+from qdrant_client.models import VectorParams, PointStruct, PointIdsList
 from vectorizer.vectorizer import Vectorizer
 
 class QdrantRepository(Repository):
@@ -38,13 +39,15 @@ class QdrantRepository(Repository):
             points=points
         )
 
-    def find(self, query: str):
+    def find(self, query: str) -> list[Passage]:
         vector = self.vectorizer.get_vector(query)
 
-        return self.qdrant.search(
+        data = self.qdrant.search(
             collection_name=self.collection_name,
             query_vector=vector
         )
+
+        return list(map(lambda point: Passage(point.payload["id"], point.payload["text"], point.payload["metadata"]["title"]), data))
 
     def delete(self, query):
         return self.qdrant.delete(query)

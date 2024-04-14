@@ -11,7 +11,7 @@ class Repository(ABC):
         pass
 
     @abstractmethod
-    def find(self, query):
+    def find(self, query) -> list[Passage]: 
         pass
 
     @abstractmethod
