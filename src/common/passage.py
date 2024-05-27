@@ -5,10 +5,4 @@ class Passage:
         self.title = title
 
     def dict(self):
-        return {
-            "id": self.id,
-            "text": self.text,
-            "metadata": {
-                "title": self.title
-            }
-        }
+        return {"id": self.id, "text": self.text, "metadata": {"title": self.title}}
