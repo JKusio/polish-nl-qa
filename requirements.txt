@@ -12,6 +12,7 @@ elasticsearch
 python-dotenv
 evaluate
 langchain
+langchain_experimental
 sentence-transformers
 matplotlib
 optimum
