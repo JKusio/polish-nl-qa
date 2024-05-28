@@ -1,17 +1,18 @@
 from abc import ABC, abstractmethod
 from common.passage import Passage
 
-class Repository(ABC): 
+
+class Repository(ABC):
     @abstractmethod
-    def insertOne(self, data: Passage):
+    def insert_one(self, data: Passage):
         pass
 
     @abstractmethod
-    def insertMany(self, data: list[Passage]):
+    def insert_many(self, data: list[Passage]):
         pass
 
     @abstractmethod
-    def find(self, query) -> list[Passage]: 
+    def find(self, query) -> list[Passage]:
         pass
 
     @abstractmethod

@@ -11,12 +11,18 @@ class PoquadDatasetGetter(DatasetGetter):
         dataset = load_dataset(self.dataset, split="train", trust_remote_code=True)
         return [
             {
+                "id": id,
                 "passage": passage,
                 "question": question,
                 "answers": answers["text"],
+                "title": title,
             }
-            for passage, question, answers in zip(
-                dataset["context"], dataset["question"], dataset["answers"]
+            for id, passage, question, answers, title in zip(
+                dataset["id"],
+                dataset["context"],
+                dataset["question"],
+                dataset["answers"],
+                dataset["title"],
             )
         ]
 
@@ -24,11 +30,17 @@ class PoquadDatasetGetter(DatasetGetter):
         dataset = load_dataset(self.dataset, split="validation", trust_remote_code=True)
         return [
             {
+                "id": id,
                 "passage": passage,
                 "question": question,
                 "answers": answers["text"],
+                "title": title,
             }
-            for passage, question, answers in zip(
-                dataset["context"], dataset["question"], dataset["answers"]
+            for id, passage, question, answers, title in zip(
+                dataset["id"],
+                dataset["context"],
+                dataset["question"],
+                dataset["answers"],
+                dataset["title"],
             )
         ]

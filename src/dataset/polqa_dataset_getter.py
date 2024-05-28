@@ -11,24 +11,38 @@ class PolqaDatasetGetter(DatasetGetter):
         dataset = load_dataset(self.dataset, split="train", trust_remote_code=True)
         return [
             {
+                "id": id,
                 "passage": passage,
                 "question": question,
                 "answers": answers,
+                "title": title,
             }
-            for passage, question, answers in zip(
-                dataset["passage_wiki"], dataset["question"], dataset["answers"]
+            for id, passage, question, answers, title in zip(
+                dataset["passage_id"],
+                dataset["passage_wiki"],
+                dataset["question"],
+                dataset["answers"],
+                dataset["passage_title"],
             )
+            if id and passage
         ]
 
     def get_test_dataset(self) -> List[Dict[str, object]]:
         dataset = load_dataset(self.dataset, split="validation", trust_remote_code=True)
         return [
             {
+                "id": id,
                 "passage": passage,
                 "question": question,
                 "answers": answers,
+                "title": title,
             }
-            for passage, question, answers in zip(
-                dataset["passage_wiki"], dataset["question"], dataset["answers"]
+            for id, passage, question, answers, title in zip(
+                dataset["passage_id"],
+                dataset["passage_wiki"],
+                dataset["question"],
+                dataset["answers"],
+                dataset["passage_title"],
             )
+            if id and passage
         ]

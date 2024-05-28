@@ -1,53 +1,80 @@
-from re import L
+from typing import List
 from common.passage import Passage
 from repository.repository import Repository
 from qdrant_client import QdrantClient
-from qdrant_client.models import VectorParams, PointStruct, PointIdsList
+from qdrant_client.models import VectorParams, PointStruct
 from vectorizer.vectorizer import Vectorizer
+import uuid
+
 
 class QdrantRepository(Repository):
-    def __init__(self, client: QdrantClient, collection_name: str, vectors_config: VectorParams, vectorizer: Vectorizer):
+    def __init__(
+        self,
+        client: QdrantClient,
+        collection_name: str,
+        vectors_config: VectorParams,
+        vectorizer: Vectorizer,
+    ):
         self.qdrant = client
         self.collection_name = collection_name
         self.vectorizer = vectorizer
 
         collections = self.qdrant.get_collections()
-        if collection_name not in [collection.name for collection in collections.collections]:
+        if collection_name not in [
+            collection.name for collection in collections.collections
+        ]:
             print(f"Collection {collection_name} not found. Creating collection...")
             self.qdrant.create_collection(
                 collection_name=collection_name,
                 vectors_config=vectors_config,
             )
-        
+
         print(f"Qdrant collection {collection_name} repository initialized")
 
-    def insertOne(self, passage: Passage):
+    def insert_one(self, passage: Passage):
         return self.qdrant.upsert(
             collection_name=self.collection_name,
             wait=False,
             points=[
-                PointStruct(id=passage.id, vector=self.vectorizer.get_vector(passage.text), payload=passage.dict())
-            ]
+                PointStruct(
+                    id=str(uuid.uuid4()),
+                    vector=self.vectorizer.get_vector(passage.text),
+                    payload=passage.dict(),
+                )
+            ],
         )
-    
-    def insertMany(self, passages: list[Passage]):
-        points = list(map(lambda passage: PointStruct(id=passage.id, vector=self.vectorizer.get_vector(passage.text), payload=passage.dict()), passages))
+
+    def insert_many(self, passages: List[Passage]):
+        points = [
+            PointStruct(
+                id=str(uuid.uuid4()),
+                vector=self.vectorizer.get_vector(passage.text),
+                payload=passage.dict(),
+            )
+            for passage in passages
+        ]
 
         return self.qdrant.upsert(
-            collection_name=self.collection_name,
-            wait=True,
-            points=points
+            collection_name=self.collection_name, wait=True, points=points
         )
 
     def find(self, query: str) -> list[Passage]:
         vector = self.vectorizer.get_vector(query)
 
         data = self.qdrant.search(
-            collection_name=self.collection_name,
-            query_vector=vector
+            collection_name=self.collection_name, query_vector=vector
         )
 
-        return list(map(lambda point: Passage(point.payload["id"], point.payload["text"], point.payload["metadata"]["title"]), data))
+        return list(
+            map(
+                lambda point: Passage(
+                    point.payload["id"],
+                    point.payload["text"],
+                    point.payload["metadata"]["title"],
+                ),
+                data,
+            )
+        )
 
     def delete(self, query):
         return self.qdrant.delete(query)
