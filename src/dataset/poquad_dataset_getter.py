@@ -9,25 +9,13 @@ class PoquadDatasetGetter(DatasetGetter):
 
     def get_training_dataset(self) -> List[Dict[str, object]]:
         dataset = load_dataset(self.dataset, split="train", trust_remote_code=True)
-        return [
-            {
-                "id": id,
-                "passage": passage,
-                "question": question,
-                "answers": answers["text"],
-                "title": title,
-            }
-            for id, passage, question, answers, title in zip(
-                dataset["id"],
-                dataset["context"],
-                dataset["question"],
-                dataset["answers"],
-                dataset["title"],
-            )
-        ]
+        return self._convert_to_dict(dataset)
 
     def get_test_dataset(self) -> List[Dict[str, object]]:
         dataset = load_dataset(self.dataset, split="validation", trust_remote_code=True)
+        return self._convert_to_dict(dataset)
+
+    def _convert_to_dict(self, dataset) -> List[Dict[str, str]]:
         return [
             {
                 "id": id,

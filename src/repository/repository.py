@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Any, List, Tuple
 from common.passage import Passage
 
 
@@ -8,11 +9,19 @@ class Repository(ABC):
         pass
 
     @abstractmethod
-    def insert_many(self, data: list[Passage]):
+    def insert_one_with_vector(self, data: Passage, vector: Any):
         pass
 
     @abstractmethod
-    def find(self, query) -> list[Passage]:
+    def insert_many(self, data: List[Passage]):
+        pass
+
+    @abstractmethod
+    def insert_many_with_vectors(self, data: List[Tuple]):
+        pass
+
+    @abstractmethod
+    def find(self, query) -> List[Passage]:
         pass
 
     @abstractmethod

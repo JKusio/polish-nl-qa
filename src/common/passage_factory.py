@@ -26,22 +26,19 @@ class PassageFactory:
             row["passage"]: (
                 row["id"],
                 row["passage"],
-                row["question"],
-                row["answers"],
                 row["title"],
             )
             for row in dataset
         }
+
         return set(unique_rows.values())
 
-    def get_passages_for_embedding(self, length=1000) -> List[Passage]:
+    def get_passages(self, length=1000) -> List[Passage]:
         dataset = self.dataset_getter.get_test_dataset()
         unique_entries = self._get_unique_entries(dataset)
 
-        len(unique_entries)
-
         passages = []
-        for i, (id, passage, _, _, title) in enumerate(unique_entries):
+        for i, (id, passage, title) in enumerate(unique_entries):
             splits = self.text_splitter.create_documents([passage])
             start_index = 0
             for split in splits:

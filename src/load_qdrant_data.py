@@ -1,7 +1,6 @@
+from typing import List
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from numpy import character, vectorize
 from common.models_dimensions import MODEL_DIMENSIONS_MAP
-from common.passage import Passage
 from common.passage_factory import PassageFactory
 from common.qdrant_data_importer import QdrantDataImporter
 from common.utils import get_qdrant_collection_name
@@ -15,18 +14,12 @@ from langchain_community.embeddings import HuggingFaceEmbeddings
 from dataset.polqa_dataset_getter import PolqaDatasetGetter
 
 
-# Models to use
-# sdadas/mmlw-retrieval-roberta-large
-# ipipan/silver-retriever-base-v1
-# intfloat/multilingual-e5-large
-# sdadas/mmlw-roberta-large
-# BAAI/bge-m3 (dense)
-
-
 def main():
     client = QdrantClient(host="localhost", port=6333)
 
-    dataset_names = ["ipipan/polqa", "clarin-pl/poquad"]
+    # dataset_names = ["ipipan/polqa", "clarin-pl/poquad"]
+
+    dataset_names = ["clarin-pl/poquad"]
 
     model_names = [
         "sdadas/mmlw-retrieval-roberta-large",
@@ -43,182 +36,120 @@ def main():
             vectorizer = HFVectorizer(model_name)
             embeddings = HuggingFaceEmbeddings(model_name=model_name)
             dimension = MODEL_DIMENSIONS_MAP[model_name]
-
-            for distance in distances:
-                get_interquartile_data(
+            for chunk_size, chunk_overlap in [(500, 100), (1000, 200), (2000, 500)]:
+                insert_character_splitting_passage_data(
                     client,
                     dataset_name,
                     model_name,
                     vectorizer,
+                    distances,
+                    chunk_size,
+                    chunk_overlap,
+                    dimension,
+                )
+
+            for semantic_type in ["interquartile", "standard_deviation", "percentile"]:
+                insert_semantic_passage_data(
+                    client,
+                    dataset_name,
+                    model_name,
                     embeddings,
-                    distance,
-                    dimension,
-                )
-
-                get_standard_deviation_data(
-                    client,
-                    dataset_name,
-                    model_name,
                     vectorizer,
-                    embeddings,
-                    distance,
-                    dimension,
-                )
-
-                get_percentile_data(
-                    client,
-                    dataset_name,
-                    model_name,
-                    vectorizer,
-                    embeddings,
-                    distance,
-                    dimension,
-                )
-
-                get_character_splitting_data(
-                    client,
-                    dataset_name,
-                    model_name,
-                    vectorizer,
-                    500,
-                    100,
-                    distance,
-                    dimension,
-                )
-
-                get_character_splitting_data(
-                    client,
-                    dataset_name,
-                    model_name,
-                    vectorizer,
-                    1000,
-                    200,
-                    distance,
-                    dimension,
-                )
-
-                get_character_splitting_data(
-                    client,
-                    dataset_name,
-                    model_name,
-                    vectorizer,
-                    2000,
-                    400,
-                    distance,
+                    distances,
+                    semantic_type,
                     dimension,
                 )
 
 
-def get_interquartile_data(
+def insert_semantic_passage_data(
     client: QdrantClient,
     dataset_name: str,
     model_name: str,
-    vectorizer: HFVectorizer,
     embeddings: HuggingFaceEmbeddings,
-    distance: Distance,
-    size: int,
+    vectorizer: HFVectorizer,
+    distances: List[Distance],
+    breakpoint_threshold_type: str,
+    dimension: int,
 ):
-    collection_name = get_qdrant_collection_name(
-        dataset_name, model_name, "interquartile", 1.5, distance
+    repositories = []
+
+    for distance in distances:
+        collection_name = get_qdrant_collection_name(
+            dataset_name, model_name, breakpoint_threshold_type, 1.5, distance
+        )
+
+        repository = QdrantRepository(
+            client,
+            collection_name,
+            VectorParams(size=dimension, distance=distance),
+            vectorizer,
+        )
+
+        repositories.append(repository)
+
+    passage_factory = get_semantic_passage_factory(
+        embeddings, breakpoint_threshold_type, dataset_name
     )
-    repository = QdrantRepository(
-        client,
-        collection_name,
-        VectorParams(size=size, distance=distance),
-        vectorizer,
-    )
+
+    data_importer = QdrantDataImporter(repositories, passage_factory, vectorizer)
+
+    data_importer.import_data()
+
+
+def get_semantic_passage_factory(
+    embeddings: HuggingFaceEmbeddings,
+    breakpoint_threshold_type: str,
+    dataset_name: str,
+) -> PassageFactory:
     text_splitter = SemanticChunker(
-        embeddings, breakpoint_threshold_type="interquartile"
+        embeddings,
+        breakpoint_threshold_type=breakpoint_threshold_type,
     )
 
     dataset_getter = (
         dataset_name == "ipipan/polqa" and PolqaDatasetGetter() or PoquadDatasetGetter()
     )
-    passage_factory = PassageFactory(text_splitter, dataset_getter)
-
-    data_importer = QdrantDataImporter(repository, passage_factory)
-    data_importer.import_data()
+    return PassageFactory(text_splitter, dataset_getter)
 
 
-def get_standard_deviation_data(
+def insert_character_splitting_passage_data(
     client: QdrantClient,
     dataset_name: str,
     model_name: str,
     vectorizer: HFVectorizer,
-    embeddings: HuggingFaceEmbeddings,
-    distance: Distance,
-    size: int,
-):
-    collection_name = get_qdrant_collection_name(
-        dataset_name, model_name, "standard_deviation", 3, distance
-    )
-    repository = QdrantRepository(
-        client,
-        collection_name,
-        VectorParams(size=size, distance=distance),
-        vectorizer,
-    )
-    text_splitter = SemanticChunker(
-        embeddings, breakpoint_threshold_type="standard_deviation"
-    )
-
-    dataset_getter = (
-        dataset_name == "ipipan/polqa" and PolqaDatasetGetter() or PoquadDatasetGetter()
-    )
-    passage_factory = PassageFactory(text_splitter, dataset_getter)
-
-    data_importer = QdrantDataImporter(repository, passage_factory)
-    data_importer.import_data()
-
-
-def get_percentile_data(
-    client: QdrantClient,
-    dataset_name: str,
-    model_name: str,
-    vectorizer: HFVectorizer,
-    embeddings: HuggingFaceEmbeddings,
-    distance: Distance,
-    size: int,
-):
-    collection_name = get_qdrant_collection_name(
-        dataset_name, model_name, "percentile", 95, distance
-    )
-    repository = QdrantRepository(
-        client,
-        collection_name,
-        VectorParams(size=size, distance=distance),
-        vectorizer,
-    )
-    text_splitter = SemanticChunker(embeddings, breakpoint_threshold_type="percentile")
-
-    dataset_getter = (
-        dataset_name == "ipipan/polqa" and PolqaDatasetGetter() or PoquadDatasetGetter()
-    )
-    passage_factory = PassageFactory(text_splitter, dataset_getter)
-
-    data_importer = QdrantDataImporter(repository, passage_factory)
-    data_importer.import_data()
-
-
-def get_character_splitting_data(
-    client: QdrantClient,
-    dataset_name: str,
-    model_name: str,
-    vectorizer: HFVectorizer,
+    distances: List[Distance],
     chunk_size: int,
     chunk_overlap: int,
-    distance: Distance,
-    size: int,
+    dimension: int,
 ):
-    collection_name = get_qdrant_collection_name(
-        dataset_name, model_name, "character_splitting", chunk_size, distance
+    repositories = []
+
+    for distance in distances:
+        collection_name = get_qdrant_collection_name(
+            dataset_name, model_name, "character", chunk_size, distance
+        )
+
+        repository = QdrantRepository(
+            client,
+            collection_name,
+            VectorParams(size=dimension, distance=distance),
+            vectorizer,
+        )
+
+        repositories.append(repository)
+
+    passage_factory = get_character_splitting_passage_factory(
+        chunk_size, chunk_overlap, dataset_name
     )
-    repository = QdrantRepository(
-        client,
-        collection_name,
-        VectorParams(size=size, distance=distance),
-        vectorizer,
-    )
+
+    data_importer = QdrantDataImporter(repositories, passage_factory, vectorizer)
+
+    data_importer.import_data()
+
+
+def get_character_splitting_passage_factory(
+    chunk_size: int, chunk_overlap: int, dataset_name: str
+) -> PassageFactory:
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=chunk_size, chunk_overlap=chunk_overlap, strip_whitespace=True
     )
@@ -226,10 +157,7 @@ def get_character_splitting_data(
     dataset_getter = (
         dataset_name == "ipipan/polqa" and PolqaDatasetGetter() or PoquadDatasetGetter()
     )
-    passage_factory = PassageFactory(text_splitter, dataset_getter, chunk_overlap)
-
-    data_importer = QdrantDataImporter(repository, passage_factory)
-    data_importer.import_data()
+    return PassageFactory(text_splitter, dataset_getter, chunk_overlap)
 
 
 main()
