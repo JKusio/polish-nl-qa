@@ -1,0 +1,20 @@
+{
+  "mappings": {
+    "properties": {
+      "text": {
+        "type": "text",
+        "analyzer": "polish"
+      },
+      "title": {
+        "type": "text",
+        "analyzer": "polish"
+      },
+      "id": {
+        "type": "keyword"
+      },
+      "start_index": {
+        "type": "integer"
+      }
+    }
+  }
+}

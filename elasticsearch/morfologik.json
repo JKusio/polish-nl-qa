@@ -1,0 +1,20 @@
+{
+  "mappings": {
+    "properties": {
+      "text": {
+        "type": "text",
+        "analyzer": "morfologik"
+      },
+      "title": {
+        "type": "text",
+        "analyzer": "morfologik"
+      },
+      "id": {
+        "type": "keyword"
+      },
+      "start_index": {
+        "type": "integer"
+      }
+    }
+  }
+}

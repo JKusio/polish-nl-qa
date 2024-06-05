@@ -1,0 +1,41 @@
+{
+  "settings": {
+    "analysis": {
+      "filter": {
+        "morfologik_stop": {
+          "type": "stop",
+          "stopwords": ["a","aby","ach","acz","aczkolwiek","aj","aktualnie","albo","albowiem","ale","ależ","ani","ano","apiać","atoli","azali","azaliż","aż","bardziej","bardzo","bezzwłocznie","biegiem","blisko","bo","bodaj","bowiem","by","byli","bynajmniej","być","był","była","było","były","bądź","będzie","będą","błyskawicznie","cali","chociaż","chociażby","choć","choćby","chyba","ci","ciebie","cię","co","cokolwiek","coś","czasami","czasem","czemu","czy","czyli","dalejże","daleko","dawaj","dla","dlaczego","dlatego","do","dobrze","dokąd","dostatecznie","dosyć","dosłownie","dotychczas","dotąd","dość","dużo","dwaj","dwie","dzisiaj","dziś","ewentualnie","faktycznie","fakultatywnie","garść","gdy","gdyby","gdyż","gdzie","gdziekolwiek","gdzieś","i","ich","ile","im","inna","inne","inny","innych","istnieć","istotnie","iż","ja","jak","jaka","jakaś","jakby","jaki","jakichś","jakie","jakikolwiek","jakiś","jakiż","jakkolwiek","jako","jakoby","jakoś","je","jedna","jednak","jednakowoż","jednakże","jedno","jego","jej","jemu","jest","jestem","jeszcze","jeśli","jeśliby","jeżeli","już","jużci","ją","każdy","kiedy","kilka","kimś","koło","kto","ktokolwiek","ktoś","która","które","którego","której","który","których","którym","którzy","ku","kędyś","lat","lecz","lub","ma","mają","mam","mi","migiem","mimo","między","mnie","mną","mogą","moi","moim","moja","moje","momentalnie","może","możliwe","można","mu","musi","my","mój","na","nad","najmniej","najpierw","należy","nam","nami","naprawdę","naprzeciw","nas","nasi","nasz","nasza","nasze","naszego","naszych","natomiast","natychmiast","natychmiastowo","nawet","niby","nic","nich","nico","nie","niebawem","niech","niedaleko","niedługo","niego","niej","niejaki","niekiedy","niemniej","niemu","nieopodal","niezadługo","niezwłocznie","nigdy","nim","nimi","nią","niż","no","nul","nuż","nuże","o","obecnie","obok","och","ociupinę","oczywiście","od","odmienny","odrobinę","one","oni","ono","opcjonalnie","oraz","oto","owszem","pana","pewien","pierwej","po","pod","podczas","podobno","podług","pomimo","ponad","poniekąd","ponieważ","pono","ponownie","ponoć","porządnie","powinien","powinna","powinni","powinno","powtórnie","poza","pośród","prawie","przecież","przeciw","przed","przede","przedtem","przekonany","przenigdy","przeszło","przez","przeświadczony","przy","przynajmniej","przyzwoicie","pędem","raczej","realnie","roku","rzeczywiście","rzekomo","również","sama","się","skoro","skąd","skądże","sobie","sobą","stosunkowo","swoje","szczyptę","są","słusznie","ta","tak","taka","taki","takie","także","tam","te","tego","tej","temu","ten","teraz","też","to","tobie","tobą","toteż","troszkę","trzeba","tu","tutaj","twoi","twoim","twoja","twoje","twym","twój","ty","tych","tylko","tym","tymczasem","u","uprzednio","utwierdzony","w","wam","wami","was","wasz","wasza","wasze","wbrew","wcale","wczas","wcześniej","we","wedle","według","wielce","wiele","wielu","więc","więcej","wkrótce","wnet","wpierw","wprawdzie","wprzódy","współcześnie","wszelaki","wszelako","wszelki","wszyscy","wszystek","wszystkich","wszystkie","wszystkim","wszystko","wtedy","wtem","wy","wysoce","wysoko","wystarczająco","wystarczy","względnie","właśnie","wśród","z","za","zaiste","zapewne","zaraz","zawsze","ze","znacznie","znowu","znowuż","znów","został","zrazu","zł","ździebko","żaden","żadna","żadne","żadnych","że","żeby"]
+        }
+      },
+      "analyzer": {
+        "morfologik_stopwords": { 
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase",
+            "morfologik_stem",
+            "morfologik_stop"
+          ]
+        }
+      }
+    }
+  },
+  "mappings": {
+    "properties": {
+      "text": {
+        "type": "text",
+        "analyzer": "morfologik_stopwords"
+      },
+      "title": {
+        "type": "text",
+        "analyzer": "morfologik_stopwords"
+      },
+      "id": {
+        "type": "keyword"
+      },
+      "start_index": {
+        "type": "integer"
+      }
+    }
+  }
+}

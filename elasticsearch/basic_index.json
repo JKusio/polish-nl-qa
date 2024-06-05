@@ -1,0 +1,20 @@
+{
+  "mappings": {
+    "properties": {
+      "text": {
+        "type": "text",
+        "analyzer": "standard"
+      },
+      "title": {
+        "type": "text",
+        "analyzer": "standard"
+      },
+      "id": {
+        "type": "keyword"
+      },
+      "start_index": {
+        "type": "integer"
+      }
+    }
+  }
+}

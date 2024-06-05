@@ -1,0 +1,34 @@
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "polish_whitespace": { 
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase",
+            "polish_stem"
+          ]
+        }
+      }
+    }
+  },
+  "mappings": {
+    "properties": {
+      "text": {
+        "type": "text",
+        "analyzer": "polish_whitespace"
+      },
+      "title": {
+        "type": "text",
+        "analyzer": "polish_whitespace"
+      },
+      "id": {
+        "type": "keyword"
+      },
+      "start_index": {
+        "type": "integer"
+      }
+    }
+  }
+}
