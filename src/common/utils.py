@@ -14,6 +14,10 @@ def generate_id():
     return str(uuid.uuid4())
 
 
+def replace_slash_with_dash(text: str):
+    return text.replace("/", "-")
+
+
 def get_qdrant_collection_name(
     dataset_name: str,
     model_name: str,

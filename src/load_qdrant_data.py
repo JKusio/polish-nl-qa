@@ -17,9 +17,7 @@ from dataset.polqa_dataset_getter import PolqaDatasetGetter
 def main():
     client = QdrantClient(host="localhost", port=6333)
 
-    # dataset_names = ["ipipan/polqa", "clarin-pl/poquad"]
-
-    dataset_names = ["clarin-pl/poquad"]
+    dataset_names = ["ipipan/polqa", "clarin-pl/poquad"]
 
     model_names = [
         "sdadas/mmlw-retrieval-roberta-large",

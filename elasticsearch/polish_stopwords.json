@@ -34,6 +34,9 @@
       },
       "start_index": {
         "type": "integer"
+      },
+      "dataset_key": {
+        "type": "keyword"
       }
     }
   }
