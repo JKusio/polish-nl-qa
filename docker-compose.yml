@@ -31,7 +31,14 @@ services:
       - kibana_data:/usr/share/kibana/data
     depends_on:
       - elasticsearch
+  redis:
+    image: redis:latest
+    ports:
+      - 6379:6379
+    volumes:
+      - redis_data:/data  
 volumes:
   qdrant_data:
   elasticsearch_data:
   kibana_data:
+  redis_data:
