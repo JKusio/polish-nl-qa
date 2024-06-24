@@ -1,5 +1,6 @@
 import uuid
 from common.passage import Passage
+import hashlib
 
 
 def get_passages_for_embedding(dataset):
@@ -28,3 +29,8 @@ def get_qdrant_collection_name(
     return f"{dataset_name}-{model_name}-{chunking_strategy}-{chunking_size}-{distance}".replace(
         "/", "-"
     )
+
+
+def get_prompt_hash(prompt: str):
+    hashed = hashlib.sha256(prompt.encode()).hexdigest()
+    return "prompt:" + hashed[:8]

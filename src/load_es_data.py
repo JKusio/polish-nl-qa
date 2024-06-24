@@ -1,8 +1,14 @@
 from typing import List
 from elasticsearch import Elasticsearch
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-import qdrant_client
 from common.models_dimensions import MODEL_DIMENSIONS_MAP
+from common.names import (
+    CHARACTER_SPLITTING_FUNCTION,
+    DATASET_NAMES,
+    MODEL_NAMES,
+    SEMANTIC_TYPES,
+    INDEX_NAMES,
+)
 from common.passage_factory import PassageFactory
 from common.qdrant_data_importer import QdrantDataImporter
 from common.utils import get_qdrant_collection_name, replace_slash_with_dash
@@ -23,42 +29,10 @@ def main():
 
     qdrant_client = QdrantClient(host="localhost", port=6333)
 
-    dataset_names = ["ipipan/polqa", "clarin-pl/poquad"]
-
-    model_names = [
-        "sdadas/mmlw-retrieval-roberta-large",
-        "ipipan/silver-retriever-base-v1",
-        "intfloat/multilingual-e5-large",
-        "sdadas/mmlw-roberta-large",
-        "BAAI/bge-m3",
-    ]
-
-    character_splitting_function = [
-        "character-500",
-        "character-1000",
-        "character-2000",
-    ]
-
-    semantic_splitting_function = [
-        "interquartile",
-        "standard_deviation",
-        "percentile",
-    ]
-
-    index_names = [
-        "basic_index",
-        "polish_index",
-        "polish_whitespace_index",
-        "polish_stopwords_index",
-        "morfologik_index",
-        "morfologik_whitespace_index",
-        "morfologik_stopwords_index",
-    ]
-
     qdrant_collections = qdrant_client.get_collections()
 
-    for dataset_name in dataset_names:
-        for split in character_splitting_function:
+    for dataset_name in DATASET_NAMES:
+        for split in CHARACTER_SPLITTING_FUNCTION:
             collection = next(
                 (
                     c
@@ -76,7 +50,7 @@ def main():
                 collection_name=collection.name, limit=10000
             )
 
-            for index in index_names:
+            for index in INDEX_NAMES:
                 insert_passages(
                     es_client,
                     index,
@@ -85,8 +59,8 @@ def main():
                 )
                 print("Inserted data for", dataset_name, split, index)
 
-        for model_name in model_names:
-            for split in semantic_splitting_function:
+        for model_name in MODEL_NAMES:
+            for split in SEMANTIC_TYPES:
                 collection = next(
                     (
                         c
@@ -107,7 +81,7 @@ def main():
                     collection_name=collection.name, limit=10000
                 )
 
-                for index in index_names:
+                for index in INDEX_NAMES:
                     insert_passages(
                         es_client,
                         index,
