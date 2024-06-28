@@ -19,6 +19,11 @@ from dataset.polqa_dataset_getter import PolqaDatasetGetter
 from elasticsearch import Elasticsearch
 from qdrant_client import QdrantClient
 from cache.cache import Cache
+from common.models_dimensions import MODEL_DIMENSIONS_MAP
+from common.names import DISTANCES, MODEL_NAMES
+from common.utils import get_all_qdrant_collection_names
+from repository.qdrant_repository import QdrantRepository
+from vectorizer.hf_vectorizer import HFVectorizer
 
 
 # Models to use
@@ -31,19 +36,22 @@ from cache.cache import Cache
 
 def main():
     qdrant_client = QdrantClient(host="localhost", port=6333)
-    es_client = Elasticsearch(
-        hosts=["http://localhost:9200"],
-    )
     cache = Cache()
-    es_repositories: Dict[str, ESRepository] = {}
-
-    for index_name in INDEX_NAMES:
-        es_repositories[index_name] = ESRepository(es_client, index_name, cache)
-        
-    result = es_repositories["polish_whitespace_index"].find(
-    "Platforma Obywatelska", replace_slash_with_dash(f"{"ipipan/polqa"}-{"character-500"}")
+    model_name = "sdadas/mmlw-retrieval-roberta-large"
+    collection_name = (
+        "ipipan-polqa-sdadas-mmlw-retrieval-roberta-large-character-500-Cosine"
     )
-    
+    vectorizer = HFVectorizer(model_name, None)
+    qdrant_repository = QdrantRepository(
+        qdrant_client,
+        collection_name,
+        "sdadas/mmlw-retrieval-roberta-large",
+        VectorParams(size=1024, distance=DISTANCES[0]),
+        vectorizer,
+        cache,
+    )
+
+    result = qdrant_repository.find("Platforma Obywatelska")
     print(result)
 
 
