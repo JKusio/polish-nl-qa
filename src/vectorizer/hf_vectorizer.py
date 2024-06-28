@@ -1,10 +1,11 @@
 from typing import Any
+from cache.cache import Cache
 from vectorizer.vectorizer import Vectorizer
 from sentence_transformers import SentenceTransformer
 
 
 class HFVectorizer(Vectorizer):
-    def __init__(self, model_name: str):
+    def __init__(self, model_name: str, cache: Cache):
         self.model = SentenceTransformer(model_name)
         self.max_seq_length = self.model.max_seq_length
 

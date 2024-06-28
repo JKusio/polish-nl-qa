@@ -1,9 +1,12 @@
+from ast import Dict
 from tkinter import Place
 from xml.etree.ElementInclude import include
 from elasticsearch import Elasticsearch
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from common.names import INDEX_NAMES
 from common.passage import Passage
 from common.passage_factory import PassageFactory
+from common.utils import replace_slash_with_dash
 from dataset.poquad_dataset_getter import PoquadDatasetGetter
 from repository.es_repository import ESRepository
 from repository.qdrant_repository import QdrantRepository
@@ -13,6 +16,9 @@ from vectorizer.hf_vectorizer import HFVectorizer
 from langchain_experimental.text_splitter import SemanticChunker
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from dataset.polqa_dataset_getter import PolqaDatasetGetter
+from elasticsearch import Elasticsearch
+from qdrant_client import QdrantClient
+from cache.cache import Cache
 
 
 # Models to use
@@ -24,55 +30,21 @@ from dataset.polqa_dataset_getter import PolqaDatasetGetter
 
 
 def main():
-    # es_client = Elasticsearch(
-    #     hosts=["http://localhost:9200"],
-    # )
+    qdrant_client = QdrantClient(host="localhost", port=6333)
+    es_client = Elasticsearch(
+        hosts=["http://localhost:9200"],
+    )
+    cache = Cache()
+    es_repositories: Dict[str, ESRepository] = {}
 
-    # es_repo = ESRepository(es_client, "basic_index")
-    # passage = Passage("1", "context", "title", 0)
-
-    # es_repo.insert_one(passage)
-
-    # print(es_repo.find("context"))
-    client = QdrantClient(host="localhost", port=6333)
-
-    # get all collections
-    collections = client.get_collections()
-
-    poquad_ids = []
-
-    print(collections.collections[0])
-
-    for collection in collections.collections:
-        if "poquad" in collection.name:
-            print(collection.name)
-
-            all_points = []
-            next_page_offset = 0
-            count = client.count(collection_name=collection.name)
-            print(count.count)
-
-            while True:
-                # Scroll through the collection
-                points, _ = client.scroll(
-                    collection_name=collection.name,
-                    offset=next_page_offset,
-                )
-
-                # Append fetched points to the list
-                all_points.extend(points)
-
-                next_page_offset += 10
-                if next_page_offset > count.count - 9:
-                    break
-
-            # Extract ids from the points
-            poquad_ids.extend([point.payload.get("text") for point in all_points])
-
-    print(len(poquad_ids))
-
-    poquad_set = set(poquad_ids)
-    print(len(poquad_set))
+    for index_name in INDEX_NAMES:
+        es_repositories[index_name] = ESRepository(es_client, index_name, cache)
+        
+    result = es_repositories["polish_whitespace_index"].find(
+    "Platforma Obywatelska", replace_slash_with_dash(f"{"ipipan/polqa"}-{"character-500"}")
+    )
+    
+    print(result)
 
 
 main()

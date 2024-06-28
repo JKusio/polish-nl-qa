@@ -1,4 +1,11 @@
 import uuid
+from common.names import (
+    CHUNK_SIZES,
+    DATASET_NAMES,
+    DISTANCES,
+    MODEL_NAMES,
+    SEMANTIC_TYPES,
+)
 from common.passage import Passage
 import hashlib
 
@@ -31,6 +38,31 @@ def get_qdrant_collection_name(
     )
 
 
-def get_prompt_hash(prompt: str):
-    hashed = hashlib.sha256(prompt.encode()).hexdigest()
-    return "prompt:" + hashed[:8]
+def get_prompt_hash(model: str, prompt: str):
+    hashed = hashlib.sha256((model + prompt).encode()).hexdigest()
+    return "prompt:" + hashed
+
+
+def get_es_query_hash(index_name: str, dataset_key: str, query: str):
+    hashed = hashlib.sha256((index_name + dataset_key + query).encode()).hexdigest()
+    return "query:" + hashed
+
+
+def get_all_qdrant_collection_names():
+    names = []
+    for dataset_name in DATASET_NAMES:
+        for model_name in MODEL_NAMES:
+            for distance in DISTANCES:
+                for chunk_size, _ in CHUNK_SIZES:
+                    name = get_qdrant_collection_name(
+                        dataset_name, model_name, "character", chunk_size, distance
+                    )
+                    names.append(name)
+
+                for semantic_type in SEMANTIC_TYPES:
+                    name = get_qdrant_collection_name(
+                        dataset_name, model_name, semantic_type, 1.5, distance
+                    )
+                    names.append(name)
+
+    return names

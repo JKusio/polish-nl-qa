@@ -12,5 +12,13 @@ class Passage:
             "metadata": {"title": self.title, "start_index": self.start_index},
         }
 
+    def from_dict(data: dict):
+        return Passage(
+            data["id"],
+            data["text"],
+            data["metadata"]["title"],
+            data["metadata"]["start_index"],
+        )
+
     def __str__(self) -> str:
         return f"Passage(id={self.id}, text={self.text}, title={self.title}, start_index={self.start_index})"
