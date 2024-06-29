@@ -1,6 +1,5 @@
 from qdrant_client.models import Distance, VectorParams
 
-
 DATASET_NAMES = ["ipipan/polqa", "clarin-pl/poquad"]
 
 MODEL_NAMES = [

@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, List, Tuple
 from common.passage import Passage
+from common.result import Result
 
 
 class Repository(ABC):
@@ -13,7 +14,7 @@ class Repository(ABC):
         pass
 
     @abstractmethod
-    def find(self, query) -> List[Passage]:
+    def find(self, query) -> Result:
         pass
 
     @abstractmethod

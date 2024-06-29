@@ -106,7 +106,7 @@ class QdrantRepository(Repository):
         vector = self.vectorizer.get_vector(query)
 
         data = self.qdrant.search(
-            collection_name=self.collection_name, query_vector=vector
+            collection_name=self.collection_name, query_vector=vector, limit=10
         )
 
         passages = list(

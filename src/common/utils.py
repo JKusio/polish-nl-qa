@@ -66,3 +66,11 @@ def get_all_qdrant_collection_names():
                     names.append(name)
 
     return names
+
+
+def get_split_dataset_key(dataset_name: str, split: str):
+    return replace_slash_with_dash(f"{dataset_name}-{split}")
+
+
+def get_semantic_dataset_key(dataset_name: str, model_name: str, split: str):
+    return replace_slash_with_dash(f"{dataset_name}-{model_name}-{split}")

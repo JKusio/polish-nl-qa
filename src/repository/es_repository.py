@@ -2,6 +2,7 @@ from typing import List
 from elasticsearch import Elasticsearch
 from cache.cache import Cache
 from common.passage import Passage
+from common.result import Result
 from common.utils import get_es_query_hash
 from repository.repository import Repository
 import json
@@ -31,16 +32,17 @@ class ESRepository(Repository):
             "start_index": data.start_index,
         }
 
-    def find(self, query: str, dataset_key: str) -> List[Passage]:
+    def find(self, query: str, dataset_key: str) -> Result:
         hash_key = get_es_query_hash(self.index_name, dataset_key, query)
         cached_value = self.cache.get(hash_key)
 
         if cached_value:
             dicts = json.loads(cached_value)
             passages = [Passage.from_dict(d) for d in dicts]
-            return passages
+            return Result(query, passages)
 
         body = {
+            "size": 10,
             "query": {
                 "bool": {
                     "must": [
@@ -48,7 +50,7 @@ class ESRepository(Repository):
                         {"match": {"dataset_key": dataset_key}},
                     ]
                 }
-            }
+            },
         }
 
         result = self.client.search(index=self.index_name, body=body)
@@ -65,7 +67,7 @@ class ESRepository(Repository):
         result_json = json.dumps([p.dict() for p in passages])
         self.cache.set(hash_key, result_json)
 
-        return passages
+        return Result(query, passages)
 
     def delete(self, query: str):
         body = {"query": {"match": {"text": query}}}

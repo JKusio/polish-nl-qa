@@ -35,24 +35,20 @@ from vectorizer.hf_vectorizer import HFVectorizer
 
 
 def main():
-    qdrant_client = QdrantClient(host="localhost", port=6333)
+    es_client = Elasticsearch(
+        hosts=["http://localhost:9200"],
+    )
     cache = Cache()
-    model_name = "sdadas/mmlw-retrieval-roberta-large"
-    collection_name = (
-        "ipipan-polqa-sdadas-mmlw-retrieval-roberta-large-character-500-Cosine"
-    )
-    vectorizer = HFVectorizer(model_name, None)
-    qdrant_repository = QdrantRepository(
-        qdrant_client,
-        collection_name,
-        "sdadas/mmlw-retrieval-roberta-large",
-        VectorParams(size=1024, distance=DISTANCES[0]),
-        vectorizer,
-        cache,
-    )
+    es_repositories: Dict[str, ESRepository] = {}
 
-    result = qdrant_repository.find("Platforma Obywatelska")
-    print(result)
+    for index_name in INDEX_NAMES:
+        es_repositories[index_name] = ESRepository(es_client, index_name, cache)
+        
+    result = es_repositories["polish_index"].find(
+    "Czym są pisma rabiniczne?", replace_slash_with_dash(f"{"clarin-pl-poquad"}-{"character-500"}")
+    )
+    
+    print(result[0])
 
 
 main()
