@@ -27,15 +27,10 @@ def replace_slash_with_dash(text: str):
 
 
 def get_qdrant_collection_name(
-    dataset_name: str,
     model_name: str,
-    chunking_strategy: str,
-    chunking_size: int,
     distance: str,
 ):
-    return f"{dataset_name}-{model_name}-{chunking_strategy}-{chunking_size}-{distance}".replace(
-        "/", "-"
-    )
+    return replace_slash_with_dash(f"{model_name}-{distance}")
 
 
 def get_prompt_hash(model: str, prompt: str):
@@ -68,9 +63,5 @@ def get_all_qdrant_collection_names():
     return names
 
 
-def get_split_dataset_key(dataset_name: str, split: str):
+def get_dataset_key(dataset_name: str, split: str):
     return replace_slash_with_dash(f"{dataset_name}-{split}")
-
-
-def get_semantic_dataset_key(dataset_name: str, model_name: str, split: str):
-    return replace_slash_with_dash(f"{dataset_name}-{model_name}-{split}")

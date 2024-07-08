@@ -7,11 +7,11 @@ from vectorizer.vectorizer import Vectorizer
 class QdrantDataImporter:
     def __init__(
         self,
-        repositories: List[QdrantRepository],
+        repository: QdrantRepository,
         passage_factory: PassageFactory,
         vectorizer: Vectorizer,
     ):
-        self.repositories = repositories
+        self.repository = repository
         self.passage_factory = passage_factory
         self.vectorizer = vectorizer
 
@@ -20,10 +20,9 @@ class QdrantDataImporter:
 
         for i in range(0, len(passages), 10):
             passages_and_vectors = [
-                (passage, self.vectorizer.get_vector(passage.text))
+                (passage, self.vectorizer.get_vector(passage.context))
                 for passage in passages[i : i + 10]
             ]
 
-            for repository in self.repositories:
-                repository.insert_many_with_vectors(passages_and_vectors)
+            self.repository.insert_many_with_vectors(passages_and_vectors)
             print(f"Processed {i+10} passages")

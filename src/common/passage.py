@@ -1,24 +1,44 @@
 class Passage:
-    def __init__(self, id: str, text: str, title: str, start_index: int):
+
+    def __init__(
+        self,
+        id: str,
+        title: str,
+        context: str,
+        start_index: int,
+        dataset: str,
+        dataset_key: str,
+        metadata: dict = {},
+    ):
         self.id = id
-        self.text = text
         self.title = title
+        self.context = context
         self.start_index = start_index
+        self.dataset = dataset
+        self.dataset_key = dataset_key
+        self.metadata = metadata
 
     def dict(self):
         return {
             "id": self.id,
-            "text": self.text,
-            "metadata": {"title": self.title, "start_index": self.start_index},
+            "title": self.title,
+            "context": self.context,
+            "start_index": self.start_index,
+            "dataset": self.dataset,
+            "dataset_key": self.dataset_key,
+            "metadata": self.metadata,
         }
 
     def from_dict(data: dict):
         return Passage(
-            data["id"],
-            data["text"],
-            data["metadata"]["title"],
-            data["metadata"]["start_index"],
+            id=data["id"],
+            text=data["text"],
+            title=data["title"],
+            start_index=data["start_index"],
+            dataset=data["dataset"],
+            dataset_key=data["dataset_key"],
+            metadata=data["metadata"],
         )
 
     def __str__(self) -> str:
-        return f"Passage(id={self.id}, text={self.text}, title={self.title}, start_index={self.start_index})"
+        return f"Passage(id={self.id}, title={self.title} context={self.context}, title={self.title}, start_index={self.start_index}, dataset={self.dataset}, dataset_key={self.dataset_key}, metadata={self.metadata})"

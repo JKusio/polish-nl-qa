@@ -1,36 +1,50 @@
-import ast
-from typing import Dict, List
+from typing import List
 from datasets import load_dataset
+from common.dataset_entry import DatasetEntry
 from dataset.dataset_getter import DatasetGetter
 
 
 class PolqaDatasetGetter(DatasetGetter):
     def __init__(self) -> None:
-        self.dataset = "ipipan/polqa"
+        self.dataset_name = "ipipan/polqa"
 
-    def get_training_dataset(self) -> List[Dict[str, object]]:
-        dataset = load_dataset(self.dataset, split="train", trust_remote_code=True)
+    def get_training_dataset(self) -> List[DatasetEntry]:
+        dataset = load_dataset(self.dataset_name, split="train", trust_remote_code=True)
         return self._convert_to_dict(dataset)
 
-    def get_test_dataset(self) -> List[Dict[str, object]]:
-        dataset = load_dataset(self.dataset, split="validation", trust_remote_code=True)
+    def get_test_dataset(self) -> List[DatasetEntry]:
+        dataset = load_dataset(
+            self.dataset_name, split="validation", trust_remote_code=True
+        )
         return self._convert_to_dict(dataset)
 
-    def _convert_to_dict(self, dataset) -> List[Dict[str, str]]:
+    def _convert_to_dict(self, dataset) -> List[DatasetEntry]:
         return [
-            {
-                "id": id,
-                "passage": passage,
-                "question": question,
-                "answers": ast.literal_eval(answers),
-                "title": title,
-            }
-            for id, passage, question, answers, title in zip(
-                dataset["passage_id"],
+            DatasetEntry(
+                id,
+                title,
+                passage,
+                self.dataset_name,
+                question,
+                answers,
+                {
+                    "question_formulation": question_formulation,
+                    "question_type": question_type,
+                    "entity_type": entity_type,
+                    "passage_id": passage_id,
+                },
+            )
+            for id, title, passage, passage_id, question, answers, relevant, question_formulation, question_type, entity_type in zip(
+                dataset["question_id"],
+                dataset["passage_title"],
                 dataset["passage_wiki"],
+                dataset["passage_id"],
                 dataset["question"],
                 dataset["answers"],
-                dataset["passage_title"],
+                dataset["relevant"],
+                dataset["question_formulation"],
+                dataset["question_type"],
+                dataset["entity_type"],
             )
-            if id and passage
+            if id and passage and relevant is True
         ]

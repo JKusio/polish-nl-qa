@@ -3,7 +3,7 @@ from tkinter import Place
 from xml.etree.ElementInclude import include
 from elasticsearch import Elasticsearch
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from common.names import INDEX_NAMES
+from common.names import DATASET_NAMES, INDEX_NAMES
 from common.passage import Passage
 from common.passage_factory import PassageFactory
 from common.utils import replace_slash_with_dash
@@ -26,29 +26,24 @@ from repository.qdrant_repository import QdrantRepository
 from vectorizer.hf_vectorizer import HFVectorizer
 
 
-# Models to use
-# sdadas/mmlw-retrieval-roberta-large
-# ipipan/silver-retriever-base-v1
-# intfloat/multilingual-e5-large
-# sdadas/mmlw-roberta-large
-# BAAI/bge-m3 (dense)
+def get_passage_factory(
+    chunk_size: int, chunk_overlap: int, dataset_name: str
+) -> PassageFactory:
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=chunk_size, chunk_overlap=chunk_overlap, strip_whitespace=True
+    )
+
+    dataset_getter = (
+        dataset_name == "ipipan/polqa" and PolqaDatasetGetter() or PoquadDatasetGetter()
+    )
+    return PassageFactory(text_splitter, dataset_getter)
 
 
 def main():
-    es_client = Elasticsearch(
-        hosts=["http://localhost:9200"],
-    )
-    cache = Cache()
-    es_repositories: Dict[str, ESRepository] = {}
+    factory = get_passage_factory(1000, 100, DATASET_NAMES[1])
 
-    for index_name in INDEX_NAMES:
-        es_repositories[index_name] = ESRepository(es_client, index_name, cache)
-        
-    result = es_repositories["polish_index"].find(
-    "Czym są pisma rabiniczne?", replace_slash_with_dash(f"{"clarin-pl-poquad"}-{"character-500"}")
-    )
-    
-    print(result[0])
+    passages = factory.get_passages()
+    print(passages[1])
 
 
 main()
