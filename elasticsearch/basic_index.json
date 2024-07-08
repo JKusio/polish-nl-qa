@@ -1,7 +1,7 @@
 {
   "mappings": {
     "properties": {
-      "text": {
+      "context": {
         "type": "text",
         "analyzer": "standard"
       },
@@ -12,8 +12,8 @@
       "id": {
         "type": "keyword"
       },
-      "start_index": {
-        "type": "integer"
+      "dataset": {
+        "type": "keyword"
       },
       "dataset_key": {
         "type": "keyword"

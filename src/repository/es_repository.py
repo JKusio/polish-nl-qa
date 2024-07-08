@@ -1,5 +1,5 @@
 from typing import List
-from elasticsearch import Elasticsearch
+from elasticsearch import Elasticsearch, helpers
 from cache.cache import Cache
 from common.passage import Passage
 from common.result import Result
@@ -15,22 +15,11 @@ class ESRepository(Repository):
         self.cache = cache
 
     def insert_one(self, data: Passage):
-        return self.client.index(index=self.index_name, body=self._map_data(data))
+        return self.client.index(index=self.index_name, body=data.dict())
 
-    def insert_many(self, data: Passage):
-        body = [
-            {"index": {"_index": self.index_name}, "body": self._map_data(doc)}
-            for doc in data
-        ]
-        return self.client.bulk(body=body)
-
-    def _map_data(self, data: Passage):
-        return {
-            "id": data.id,
-            "text": data.text,
-            "title": data.title,
-            "start_index": data.start_index,
-        }
+    def insert_many(self, data: list[Passage]):
+        documents = [d.dict() for d in data]
+        return helpers.bulk(self.client, documents, index=self.index_name)
 
     def find(self, query: str, dataset_key: str) -> Result:
         hash_key = get_es_query_hash(self.index_name, dataset_key, query)

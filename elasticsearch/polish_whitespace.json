@@ -15,7 +15,7 @@
   },
   "mappings": {
     "properties": {
-      "text": {
+      "context": {
         "type": "text",
         "analyzer": "polish_whitespace"
       },
@@ -26,8 +26,8 @@
       "id": {
         "type": "keyword"
       },
-      "start_index": {
-        "type": "integer"
+      "dataset": {
+        "type": "keyword"
       },
       "dataset_key": {
         "type": "keyword"
