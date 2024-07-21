@@ -43,6 +43,13 @@ def get_es_query_hash(index_name: str, dataset_key: str, query: str):
     return "query:" + hashed
 
 
+def get_reranker_hash(model: str, query: str, passage_ids: list, count: int):
+    hashed = hashlib.sha256(
+        (model + query + str(passage_ids) + str(count)).encode()
+    ).hexdigest()
+    return "reranker:" + hashed
+
+
 def get_all_qdrant_collection_names():
     names = []
     for dataset_name in DATASET_NAMES:

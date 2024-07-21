@@ -32,8 +32,8 @@ class Passage:
     def from_dict(data: dict):
         return Passage(
             id=data["id"],
-            text=data["text"],
             title=data["title"],
+            context=data["context"],
             start_index=data["start_index"],
             dataset=data["dataset"],
             dataset_key=data["dataset_key"],
