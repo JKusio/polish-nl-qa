@@ -1,5 +1,4 @@
 class Passage:
-
     def __init__(
         self,
         id: str,

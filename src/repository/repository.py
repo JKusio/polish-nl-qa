@@ -14,7 +14,7 @@ class Repository(ABC):
         pass
 
     @abstractmethod
-    def find(self, query) -> Result:
+    def find(self, query, dataset_key) -> Result:
         pass
 
     @abstractmethod

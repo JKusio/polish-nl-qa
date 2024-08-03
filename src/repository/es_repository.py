@@ -27,7 +27,7 @@ class ESRepository(Repository):
 
         if cached_value:
             dicts = json.loads(cached_value)
-            passages = [Passage.from_dict(d) for d in dicts]
+            passages = [(Passage.from_dict(d["passage"]), d["score"]) for d in dicts]
             return Result(query, passages)
 
         body = {
@@ -35,7 +35,7 @@ class ESRepository(Repository):
             "query": {
                 "bool": {
                     "must": [
-                        {"match": {"text": query}},
+                        {"match": {"context": query}},
                         {"match": {"dataset_key": dataset_key}},
                     ]
                 }
@@ -43,17 +43,30 @@ class ESRepository(Repository):
         }
 
         result = self.client.search(index=self.index_name, body=body)
+
+        max_score = result["hits"]["hits"][0]["_score"]
+        min_score = result["hits"]["hits"][-1]["_score"]
+        score_diff = max_score - min_score
+
         passages = [
-            Passage(
-                hit["_source"]["id"],
-                hit["_source"]["text"],
-                hit["_source"]["title"],
-                hit["_source"]["start_index"],
+            (
+                Passage(
+                    hit["_source"]["id"],
+                    hit["_source"]["title"],
+                    hit["_source"]["context"],
+                    hit["_source"]["start_index"],
+                    hit["_source"]["dataset"],
+                    hit["_source"]["dataset_key"],
+                    hit["_source"]["metadata"],
+                ),
+                (hit["_score"] - min_score) / score_diff,
             )
             for hit in result["hits"]["hits"]
         ]
 
-        result_json = json.dumps([p.dict() for p in passages])
+        result_json = json.dumps(
+            [{"passage": p.dict(), "score": s} for (p, s) in passages]
+        )
         self.cache.set(hash_key, result_json)
 
         return Result(query, passages)

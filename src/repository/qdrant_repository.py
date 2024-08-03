@@ -1,10 +1,13 @@
 from typing import List, Tuple
 from cache.cache import Cache
+from common.models_dimensions import MODEL_DIMENSIONS_MAP
 from common.passage import Passage
-from common.utils import get_prompt_hash
+from common.result import Result
+from common.utils import get_prompt_hash, get_qdrant_collection_name
 from repository.repository import Repository
-from qdrant_client import QdrantClient
-from qdrant_client.models import VectorParams, PointStruct
+from qdrant_client import QdrantClient, models
+from qdrant_client.models import VectorParams, PointStruct, Distance
+from vectorizer.hf_vectorizer import HFVectorizer
 from vectorizer.vectorizer import Vectorizer
 import uuid
 import json
@@ -93,38 +96,76 @@ class QdrantRepository(Repository):
             collection_name=self.collection_name, wait=True, points=points
         )
 
-    def find(self, query: str) -> List[Passage]:
+    def find(self, query: str, dataset_key: str) -> Result:
         hash_key = get_prompt_hash(self.model_name, query)
 
         cached_value = self.cache.get(hash_key)
 
         if cached_value:
             dicts = json.loads(cached_value)
-            passages = [Passage.from_dict(d) for d in dicts]
-            return passages
+            passages = [(Passage.from_dict(d["passage"]), d["score"]) for d in dicts]
+            return Result(query, passages)
 
         vector = self.vectorizer.get_vector(query)
 
         data = self.qdrant.search(
-            collection_name=self.collection_name, query_vector=vector, limit=10
+            collection_name=self.collection_name,
+            query_vector=vector,
+            limit=10,
+            query_filter=models.Filter(
+                must=[
+                    models.FieldCondition(
+                        key="dataset_key",
+                        match=models.MatchValue(value=dataset_key),
+                    )
+                ]
+            ),
         )
 
-        passages = list(
-            map(
-                lambda point: Passage(
+        max_score = data[0].score
+        min_score = data[-1].score
+        score_diff = max_score - min_score
+
+        passages = [
+            (
+                Passage(
                     point.payload["id"],
-                    point.payload["text"],
-                    point.payload["metadata"]["title"],
-                    point.payload["metadata"]["start_index"],
+                    point.payload["title"],
+                    point.payload["context"],
+                    point.payload["start_index"],
+                    point.payload["dataset"],
+                    point.payload["dataset_key"],
+                    point.payload["metadata"],
                 ),
-                data,
+                (point.score - min_score) / score_diff,
             )
-        )
+            for point in data
+        ]
 
-        result_json = json.dumps([p.dict() for p in passages])
+        result_json = json.dumps(
+            [{"passage": p.dict(), "score": s} for (p, s) in passages]
+        )
         self.cache.set(hash_key, result_json)
 
-        return passages
+        return Result(query, passages)
 
     def delete(self, query):
         return self.qdrant.delete(query)
+
+    def get_repository(
+        client: QdrantClient,
+        model_name: str,
+        distance: Distance,
+        cache: Cache,
+    ):
+        collection_name = get_qdrant_collection_name(model_name, distance)
+        vectorizer = HFVectorizer(model_name, cache)
+
+        return QdrantRepository(
+            client,
+            collection_name,
+            model_name,
+            VectorParams(size=MODEL_DIMENSIONS_MAP[model_name], distance=distance),
+            vectorizer,
+            cache,
+        )
