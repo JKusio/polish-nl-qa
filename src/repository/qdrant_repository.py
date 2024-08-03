@@ -3,7 +3,11 @@ from cache.cache import Cache
 from common.models_dimensions import MODEL_DIMENSIONS_MAP
 from common.passage import Passage
 from common.result import Result
-from common.utils import get_prompt_hash, get_qdrant_collection_name
+from common.utils import (
+    get_prompt_hash,
+    get_qdrant_collection_name,
+    get_relevant_document_count_hash,
+)
 from repository.repository import Repository
 from qdrant_client import QdrantClient, models
 from qdrant_client.models import VectorParams, PointStruct, Distance
@@ -169,3 +173,32 @@ class QdrantRepository(Repository):
             vectorizer,
             cache,
         )
+
+    def count_relevant_documents(self, id, dataset_key) -> int:
+        hash_key = get_relevant_document_count_hash(id, dataset_key)
+
+        cached_value = self.cache.get(hash_key)
+
+        if cached_value:
+            return int(cached_value)
+
+        result = self.qdrant.count(
+            collection_name=self.collection_name,
+            count_filter=models.Filter(
+                must=[
+                    models.FieldCondition(
+                        key="id",
+                        match=models.MatchValue(value=int(id)),
+                    ),
+                    models.FieldCondition(
+                        key="dataset_key",
+                        match=models.MatchValue(value=dataset_key),
+                    ),
+                ]
+            ),
+            exact=True,
+        )
+
+        self.cache.set(hash_key, str(result.count))
+
+        return result.count

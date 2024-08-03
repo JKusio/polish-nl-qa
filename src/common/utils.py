@@ -1,11 +1,5 @@
 import uuid
-from common.names import (
-    CHUNK_SIZES,
-    DATASET_NAMES,
-    DISTANCES,
-    MODEL_NAMES,
-    SEMANTIC_TYPES,
-)
+from common.names import CHUNK_SIZES, DATASET_NAMES, DISTANCES, INDEX_NAMES, MODEL_NAMES
 from common.passage import Passage
 import hashlib
 
@@ -50,25 +44,42 @@ def get_reranker_hash(model: str, query: str, passage_ids: list, count: int):
     return "reranker:" + hashed
 
 
-def get_all_qdrant_collection_names():
-    names = []
-    for dataset_name in DATASET_NAMES:
-        for model_name in MODEL_NAMES:
-            for distance in DISTANCES:
-                for chunk_size, _ in CHUNK_SIZES:
-                    name = get_qdrant_collection_name(
-                        dataset_name, model_name, "character", chunk_size, distance
-                    )
-                    names.append(name)
-
-                for semantic_type in SEMANTIC_TYPES:
-                    name = get_qdrant_collection_name(
-                        dataset_name, model_name, semantic_type, 1.5, distance
-                    )
-                    names.append(name)
-
-    return names
+def get_relevant_document_count_hash(id: str, dataset_key: str):
+    hashed = hashlib.sha256((id + dataset_key).encode()).hexdigest()
+    return "count:" + hashed
 
 
 def get_dataset_key(dataset_name: str, split: str):
     return replace_slash_with_dash(f"{dataset_name}-{split}")
+
+
+def get_all_es_index_combinations():
+    dataset_keys = [
+        get_dataset_key(dataset_name, split)
+        for dataset_name in DATASET_NAMES
+        for split, _ in CHUNK_SIZES
+    ]
+
+    return [
+        (index, dataset_key) for index in INDEX_NAMES for dataset_key in dataset_keys
+    ]
+
+
+def get_all_qdrant_model_combinations():
+    dataset_keys = [
+        get_dataset_key(dataset_name, split)
+        for dataset_name in DATASET_NAMES
+        for split, _ in CHUNK_SIZES
+    ]
+
+    qdrant_collection_names = [
+        get_qdrant_collection_name(model, distance)
+        for model in MODEL_NAMES
+        for distance in DISTANCES
+    ]
+
+    return [
+        (collection_name, dataset_key)
+        for collection_name in qdrant_collection_names
+        for dataset_key in dataset_keys
+    ]

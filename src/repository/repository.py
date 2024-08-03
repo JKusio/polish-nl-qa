@@ -20,3 +20,7 @@ class Repository(ABC):
     @abstractmethod
     def delete(self, query):
         pass
+
+    @abstractmethod
+    def count_relevant_documents(self, id, dataset_key) -> int:
+        pass

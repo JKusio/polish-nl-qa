@@ -22,13 +22,4 @@ INDEX_NAMES = [
     "morfologik_stopwords_index",
 ]
 
-SEMANTIC_TYPES = ["interquartile", "standard_deviation", "percentile"]
-
 CHUNK_SIZES = [(500, 100), (1000, 200), (2000, 500), (100000, 0)]
-
-CHARACTER_SPLITTING_FUNCTION = [
-    "character-500",
-    "character-1000",
-    "character-2000",
-    "character-100000",
-]

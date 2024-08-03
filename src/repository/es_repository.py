@@ -3,7 +3,10 @@ from elasticsearch import Elasticsearch, helpers
 from cache.cache import Cache
 from common.passage import Passage
 from common.result import Result
-from common.utils import get_es_query_hash
+from common.utils import (
+    get_es_query_hash,
+    get_relevant_document_count_hash,
+)
 from repository.repository import Repository
 import json
 
@@ -74,3 +77,29 @@ class ESRepository(Repository):
     def delete(self, query: str):
         body = {"query": {"match": {"text": query}}}
         return self.client.delete_by_query(index=self.index_name, body=body)
+
+    def count_relevant_documents(self, id, dataset_key) -> int:
+        hash_key = get_relevant_document_count_hash(id, dataset_key)
+
+        cached_value = self.cache.get(hash_key)
+
+        if cached_value:
+            return int(cached_value)
+
+        if cached_value:
+            return int(cached_value)
+
+        body = {
+            "query": {
+                "bool": {
+                    "must": [
+                        {"match": {"id": id}},
+                        {"match": {"dataset_key": dataset_key}},
+                    ]
+                }
+            },
+        }
+
+        response = self.client.count(index=self.index_name, body=body)
+
+        return response["count"]
