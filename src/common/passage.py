@@ -41,3 +41,11 @@ class Passage:
 
     def __str__(self) -> str:
         return f"Passage(id={self.id}, title={self.title} context={self.context}, title={self.title}, start_index={self.start_index}, dataset={self.dataset}, dataset_key={self.dataset_key}, metadata={self.metadata})"
+
+    def __eq__(self, other):
+        if isinstance(other, Passage):
+            return self.id == other.id and self.dataset_key == other.dataset_key
+        return False
+
+    def __hash__(self):
+        return hash(self.id)
