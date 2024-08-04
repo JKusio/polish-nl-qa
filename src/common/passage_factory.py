@@ -21,8 +21,7 @@ class PassageFactory:
         unique_entries: List[DatasetEntry] = []
         for entry in dataset:
             if not any(
-                entry.context == unique_entry.context
-                and entry.title == unique_entry.title
+                entry.passage_id == unique_entry.passage_id
                 for unique_entry in unique_entries
             ):
                 unique_entries.append(entry)
@@ -40,7 +39,7 @@ class PassageFactory:
             for split in splits:
                 passages.append(
                     Passage(
-                        entry.id,
+                        entry.passage_id,
                         entry.title,
                         split.page_content,
                         start_index,

@@ -47,6 +47,9 @@ class ESRepository(Repository):
 
         result = self.client.search(index=self.index_name, body=body)
 
+        if (len(result["hits"]["hits"])) == 0:
+            return Result(query, [])
+
         max_score = result["hits"]["hits"][0]["_score"]
         min_score = result["hits"]["hits"][-1]["_score"]
         score_diff = max_score - min_score
@@ -62,7 +65,7 @@ class ESRepository(Repository):
                     hit["_source"]["dataset_key"],
                     hit["_source"]["metadata"],
                 ),
-                (hit["_score"] - min_score) / score_diff,
+                1 if score_diff == 0 else (hit["_score"] - min_score) / score_diff,
             )
             for hit in result["hits"]["hits"]
         ]
@@ -78,22 +81,19 @@ class ESRepository(Repository):
         body = {"query": {"match": {"text": query}}}
         return self.client.delete_by_query(index=self.index_name, body=body)
 
-    def count_relevant_documents(self, id, dataset_key) -> int:
-        hash_key = get_relevant_document_count_hash(id, dataset_key)
+    def count_relevant_documents(self, passage_id: str, dataset_key: str) -> int:
+        hash_key = get_relevant_document_count_hash(passage_id, dataset_key)
 
         cached_value = self.cache.get(hash_key)
 
-        if cached_value:
-            return int(cached_value)
-
-        if cached_value:
-            return int(cached_value)
+        # if cached_value:
+        #     return int(cached_value)
 
         body = {
             "query": {
                 "bool": {
                     "must": [
-                        {"match": {"id": id}},
+                        {"match": {"id": passage_id}},
                         {"match": {"dataset_key": dataset_key}},
                     ]
                 }
@@ -101,5 +101,7 @@ class ESRepository(Repository):
         }
 
         response = self.client.count(index=self.index_name, body=body)
+
+        self.cache.set(hash_key, response["count"])
 
         return response["count"]

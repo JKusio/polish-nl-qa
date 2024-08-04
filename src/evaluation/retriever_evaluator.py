@@ -9,7 +9,8 @@ class RetrieverEvaluator:
     # Calculate NDCG for top 10 results
     def calculate_ndcg(self, result: Result, correct_passage_id: str) -> float:
         relevances = [
-            1 if passage.id == correct_passage_id else 0 for passage in result.passages
+            1 if passage.id == correct_passage_id else 0
+            for (passage, _) in result.passages
         ]
 
         sorted_relevances = sorted(relevances, reverse=True)
@@ -23,7 +24,7 @@ class RetrieverEvaluator:
 
     # Calculate MRR for top 10 results
     def calculate_mrr(self, result: Result, correct_passage_id: str) -> float:
-        for i, passage in enumerate(result.passages):
+        for i, (passage, _) in enumerate(result.passages):
             if passage.id == correct_passage_id:
                 return 1 / (i + 1)
         return 0
@@ -33,11 +34,14 @@ class RetrieverEvaluator:
         self, result: Result, correct_passage_id: str, relevant_documents_count: int
     ) -> float:
         relevant_documents = sum(
-            1 for passage in result.passages if passage.id == correct_passage_id
+            1 for (passage, _) in result.passages if passage.id == correct_passage_id
         )
 
         return relevant_documents / relevant_documents_count
 
     # Calculate accuracy for top 1 result
     def calculate_accuracy(self, result: Result, correct_passage_id: str) -> float:
-        return 1 if result.passages[0].id == correct_passage_id else 0
+        if len(result.passages) == 0:
+            return 0
+
+        return 1 if result.passages[0][0].id == correct_passage_id else 0

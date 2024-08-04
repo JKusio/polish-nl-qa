@@ -27,6 +27,11 @@ def get_qdrant_collection_name(
     return replace_slash_with_dash(f"{model_name}-{distance}")
 
 
+def get_vectorizer_hash(model: str, prompt: str):
+    hashed = hashlib.sha256((model + prompt).encode()).hexdigest()
+    return "vectorizer:" + hashed
+
+
 def get_prompt_hash(model: str, prompt: str):
     hashed = hashlib.sha256((model + prompt).encode()).hexdigest()
     return "prompt:" + hashed
@@ -44,8 +49,8 @@ def get_reranker_hash(model: str, query: str, passage_ids: list, count: int):
     return "reranker:" + hashed
 
 
-def get_relevant_document_count_hash(id: str, dataset_key: str):
-    hashed = hashlib.sha256((id + dataset_key).encode()).hexdigest()
+def get_relevant_document_count_hash(passage_id: str, dataset_key: str):
+    hashed = hashlib.sha256((passage_id + dataset_key).encode()).hexdigest()
     return "count:" + hashed
 
 

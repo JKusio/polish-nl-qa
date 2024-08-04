@@ -1,3 +1,4 @@
+import hashlib
 from typing import List
 
 
@@ -13,6 +14,7 @@ class DatasetEntry:
         metadata: dict = {},
     ):
         self.id = id
+        self.passage_id = hashlib.sha256((title + context).encode()).hexdigest()
         self.title = title
         self.context = context
         self.dataset = dataset
@@ -21,4 +23,4 @@ class DatasetEntry:
         self.metadata = metadata
 
     def __str__(self) -> str:
-        return f"DatasetEntry(id={self.id}, title={self.title}, context={self.context}, dataset={self.dataset} question={self.question}, answers={self.answers}, metadata={self.metadata})"
+        return f"DatasetEntry(id={self.id}, passage_id={self.passage_id}, title={self.title}, context={self.context}, dataset={self.dataset} question={self.question}, answers={self.answers}, metadata={self.metadata})"

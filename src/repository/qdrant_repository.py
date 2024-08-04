@@ -126,6 +126,9 @@ class QdrantRepository(Repository):
             ),
         )
 
+        if (len(data)) == 0:
+            return Result(query, [])
+
         max_score = data[0].score
         min_score = data[-1].score
         score_diff = max_score - min_score
@@ -141,7 +144,7 @@ class QdrantRepository(Repository):
                     point.payload["dataset_key"],
                     point.payload["metadata"],
                 ),
-                (point.score - min_score) / score_diff,
+                1 if score_diff == 0 else (point.score - min_score) / score_diff,
             )
             for point in data
         ]
@@ -174,8 +177,8 @@ class QdrantRepository(Repository):
             cache,
         )
 
-    def count_relevant_documents(self, id, dataset_key) -> int:
-        hash_key = get_relevant_document_count_hash(id, dataset_key)
+    def count_relevant_documents(self, passage_id, dataset_key) -> int:
+        hash_key = get_relevant_document_count_hash(passage_id, dataset_key)
 
         cached_value = self.cache.get(hash_key)
 
@@ -188,7 +191,7 @@ class QdrantRepository(Repository):
                 must=[
                     models.FieldCondition(
                         key="id",
-                        match=models.MatchValue(value=int(id)),
+                        match=models.MatchValue(value=passage_id),
                     ),
                     models.FieldCondition(
                         key="dataset_key",

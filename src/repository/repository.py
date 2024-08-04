@@ -22,5 +22,5 @@ class Repository(ABC):
         pass
 
     @abstractmethod
-    def count_relevant_documents(self, id, dataset_key) -> int:
+    def count_relevant_documents(self, title, dataset_key) -> int:
         pass
