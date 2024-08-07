@@ -1,11 +1,8 @@
 from abc import ABC, abstractmethod
-from typing import List
-from common.passage import Passage
+from common.result import Result
 
 
 class Reranker(ABC):
     @abstractmethod
-    def get_relevant_passages(
-        self, query: str, passages: List[Passage], count: int
-    ) -> List[Passage]:
+    def rerank(self, result: Result, count: int) -> Result:
         pass

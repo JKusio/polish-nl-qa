@@ -12,6 +12,7 @@ services:
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms2g -Xmx2g
     ports:
       - 9200:9200
     volumes:
@@ -31,14 +32,18 @@ services:
       - kibana_data:/usr/share/kibana/data
     depends_on:
       - elasticsearch
-  redis:
-    image: redis:latest
+  mongo:
+    image: mongo:latest
     ports:
-      - 6379:6379
+      - 27017:27017
     volumes:
-      - redis_data:/data  
+      - mongo_data:/data/db
+    deploy:
+      resources:
+        limits:
+          memory: 2g
 volumes:
   qdrant_data:
   elasticsearch_data:
   kibana_data:
-  redis_data:
+  mongo_data:

@@ -32,8 +32,10 @@ def get_vectorizer_hash(model: str, prompt: str):
     return "vectorizer:" + hashed
 
 
-def get_prompt_hash(model: str, prompt: str):
-    hashed = hashlib.sha256((model + prompt).encode()).hexdigest()
+def get_prompt_hash(model: str, dataset_key: str, prompt: str, distance: str):
+    hashed = hashlib.sha256(
+        (model + dataset_key + prompt + distance).encode()
+    ).hexdigest()
     return "prompt:" + hashed
 
 
@@ -42,9 +44,11 @@ def get_es_query_hash(index_name: str, dataset_key: str, query: str):
     return "query:" + hashed
 
 
-def get_reranker_hash(model: str, query: str, passage_ids: list, count: int):
+def get_reranker_hash(
+    model: str, query: str, passage_ids: list, dataset_key: str, count: int
+):
     hashed = hashlib.sha256(
-        (model + query + str(passage_ids) + str(count)).encode()
+        (model + query + str(passage_ids) + dataset_key + str(count)).encode()
     ).hexdigest()
     return "reranker:" + hashed
 
@@ -77,14 +81,13 @@ def get_all_qdrant_model_combinations():
         for split, _ in CHUNK_SIZES
     ]
 
-    qdrant_collection_names = [
-        get_qdrant_collection_name(model, distance)
+    return [
+        (model, distance, dataset_key)
+        for dataset_key in dataset_keys
         for model in MODEL_NAMES
         for distance in DISTANCES
     ]
 
-    return [
-        (collection_name, dataset_key)
-        for collection_name in qdrant_collection_names
-        for dataset_key in dataset_keys
-    ]
+
+def get_query_with_prefix(query: str, prefix: str):
+    return f"{prefix}{query}"

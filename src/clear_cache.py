@@ -3,13 +3,7 @@ import redis
 r = redis.StrictRedis(host="localhost", port=6379, db=0)
 
 # comment out the keys you want to keep
-prefixes = [
-    "count:*",
-    "vectorizer:*",
-    "prompt:*",
-    "reranker:*",
-    "query:*",
-]
+prefixes = ["count:*", "vectorizer:*", "prompt:*", "reranker:*", "query:*", "score:*"]
 
 for prefix in prefixes:
     print(f"Clearing keys with prefix: {prefix}")

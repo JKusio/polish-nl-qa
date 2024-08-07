@@ -6,6 +6,7 @@ from common.result import Result
 from common.utils import (
     get_prompt_hash,
     get_qdrant_collection_name,
+    get_query_with_prefix,
     get_relevant_document_count_hash,
 )
 from repository.repository import Repository
@@ -27,12 +28,21 @@ class QdrantRepository(Repository):
         vectors_config: VectorParams,
         vectorizer: Vectorizer,
         cache: Cache,
+        passage_prefix: str = "",
+        query_prefix: str = "",
     ):
         self.qdrant = client
         self.collection_name = collection_name
         self.model_name = model_name
         self.vectorizer = vectorizer
         self.cache = cache
+        self.passage_prefix = passage_prefix
+        self.query_prefix = query_prefix
+        self.distance = (
+            Distance.COSINE
+            if Distance.COSINE.lower() in collection_name.lower()
+            else Distance.EUCLID
+        )
 
         collections = self.qdrant.get_collections()
         if collection_name not in [
@@ -53,7 +63,9 @@ class QdrantRepository(Repository):
             points=[
                 PointStruct(
                     id=str(uuid.uuid4()),
-                    vector=self.vectorizer.get_vector(passage.text),
+                    vector=self.vectorizer.get_vector(
+                        get_query_with_prefix(passage.context, self.passage_prefix)
+                    ),
                     payload=passage.dict(),
                 )
             ],
@@ -76,7 +88,9 @@ class QdrantRepository(Repository):
         points = [
             PointStruct(
                 id=str(uuid.uuid4()),
-                vector=self.vectorizer.get_vector(passage.text),
+                vector=self.vectorizer.get_vector(
+                    get_query_with_prefix(passage.context, self.passage_prefix)
+                ),
                 payload=passage.dict(),
             )
             for passage in passages
@@ -86,7 +100,7 @@ class QdrantRepository(Repository):
             collection_name=self.collection_name, wait=True, points=points
         )
 
-    def insert_many_with_vectors(self, passages: List[Tuple]):
+    def insert_many_with_vectors(self, passages: List[Tuple[Passage, List[float]]]):
         points = [
             PointStruct(
                 id=str(uuid.uuid4()),
@@ -101,7 +115,10 @@ class QdrantRepository(Repository):
         )
 
     def find(self, query: str, dataset_key: str) -> Result:
-        hash_key = get_prompt_hash(self.model_name, query)
+        full_query = get_query_with_prefix(query, self.query_prefix)
+        hash_key = get_prompt_hash(
+            self.model_name, dataset_key, full_query, self.distance
+        )
 
         cached_value = self.cache.get(hash_key)
 
@@ -110,7 +127,7 @@ class QdrantRepository(Repository):
             passages = [(Passage.from_dict(d["passage"]), d["score"]) for d in dicts]
             return Result(query, passages)
 
-        vector = self.vectorizer.get_vector(query)
+        vector = self.vectorizer.get_vector(full_query)
 
         data = self.qdrant.search(
             collection_name=self.collection_name,
@@ -164,6 +181,8 @@ class QdrantRepository(Repository):
         model_name: str,
         distance: Distance,
         cache: Cache,
+        passage_prefix: str = "",
+        query_prefix: str = "",
     ):
         collection_name = get_qdrant_collection_name(model_name, distance)
         vectorizer = HFVectorizer(model_name, cache)
@@ -175,6 +194,8 @@ class QdrantRepository(Repository):
             VectorParams(size=MODEL_DIMENSIONS_MAP[model_name], distance=distance),
             vectorizer,
             cache,
+            passage_prefix,
+            query_prefix,
         )
 
     def count_relevant_documents(self, passage_id, dataset_key) -> int:

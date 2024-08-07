@@ -3,6 +3,7 @@ from typing import List
 from common.result import Result
 from repository.es_repository import ESRepository
 from repository.qdrant_repository import QdrantRepository
+from rerankers.hf_reranker import HFReranker
 from retrievers.retriever import Retriever
 
 
@@ -13,11 +14,13 @@ class HybridRetriever(Retriever):
         qdrant_repository: QdrantRepository,
         dataset_key: str,
         alpha: float = 0.5,  # weight for ES
+        reranker: HFReranker = None,
     ):
         self.es_repository = es_repository
         self.qdrant_repository = qdrant_repository
         self.dataset_key = dataset_key
         self.alpha = alpha
+        self.reranker = reranker
 
     def get_relevant_passages(self, query: str) -> List[str]:
         es_result = self.es_repository.find(query, self.dataset_key)
@@ -39,4 +42,9 @@ class HybridRetriever(Retriever):
         final_results = list(combined_scores.items())
         final_results.sort(key=lambda x: x[1], reverse=True)
 
-        return Result(query, final_results[:10])
+        result = Result(query, final_results[:10])
+
+        if self.reranker:
+            result = self.reranker.rerank(result, 10, self.dataset_key)
+
+        return result

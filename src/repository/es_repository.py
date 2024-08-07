@@ -86,8 +86,8 @@ class ESRepository(Repository):
 
         cached_value = self.cache.get(hash_key)
 
-        # if cached_value:
-        #     return int(cached_value)
+        if cached_value:
+            return int(cached_value)
 
         body = {
             "query": {

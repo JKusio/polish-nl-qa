@@ -6,6 +6,8 @@ from common.names import (
     DATASET_NAMES,
     DISTANCES,
     MODEL_NAMES,
+    PASSAGE_PREFIX_MAP,
+    QUERY_PREFIX_MAP,
 )
 from common.passage_factory import PassageFactory
 from common.qdrant_data_importer import QdrantDataImporter
@@ -22,7 +24,7 @@ def main():
     client = QdrantClient(host="localhost", port=6333)
     cache = Cache()
 
-    for model_name in MODEL_NAMES:
+    for model_name in ["intfloat/multilingual-e5-large"]:
         vectorizer = HFVectorizer(model_name, cache)
         for distance in DISTANCES:
             insert_passage_data(client, model_name, distance, cache, vectorizer)
@@ -56,6 +58,9 @@ def insert_passage_data(
                 chunk_size, chunk_overlap, dataset_name
             )
 
+            passage_prefix = PASSAGE_PREFIX_MAP[model_name]
+            query_prefix = QUERY_PREFIX_MAP[model_name]
+
             repository = QdrantRepository(
                 client,
                 collection_name,
@@ -63,9 +68,13 @@ def insert_passage_data(
                 VectorParams(size=MODEL_DIMENSIONS_MAP[model_name], distance=distance),
                 vectorizer,
                 cache,
+                passage_prefix,
+                query_prefix,
             )
 
-            data_importer = QdrantDataImporter(repository, passage_factory, vectorizer)
+            data_importer = QdrantDataImporter(
+                repository, passage_factory, vectorizer, passage_prefix
+            )
 
             data_importer.import_data()
 
