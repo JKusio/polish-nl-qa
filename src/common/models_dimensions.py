@@ -4,4 +4,9 @@ MODEL_DIMENSIONS_MAP = {
     "intfloat/multilingual-e5-large": 1024,
     "sdadas/mmlw-roberta-large": 1024,
     "BAAI/bge-m3": 1024,
+    "text-embedding-3-large": 3072,
+}
+
+RERANKER_MODEL_DIMENSIONS_MAP = {
+    "sdadas/polish-reranker-large-ranknet": 512,
 }

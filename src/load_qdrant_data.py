@@ -24,7 +24,7 @@ def main():
     client = QdrantClient(host="localhost", port=6333)
     cache = Cache()
 
-    for model_name in ["intfloat/multilingual-e5-large"]:
+    for model_name in MODEL_NAMES:
         vectorizer = HFVectorizer(model_name, cache)
         for distance in DISTANCES:
             insert_passage_data(client, model_name, distance, cache, vectorizer)

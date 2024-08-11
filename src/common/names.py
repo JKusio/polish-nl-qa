@@ -10,6 +10,8 @@ MODEL_NAMES = [
     "BAAI/bge-m3",
 ]
 
+OPENAI_EMBEDDING_MODEL_NAMES = ["text-embedding-3-large"]
+
 QUERY_PREFIX_MAP = {
     "sdadas/mmlw-retrieval-roberta-large": "zapytanie: ",
     "ipipan/silver-retriever-base-v1": "Pytanie: ",
@@ -40,8 +42,6 @@ INDEX_NAMES = [
 
 RERANKER_MODEL_NAMES = [
     "sdadas/polish-reranker-large-ranknet",
-    "BAAI/bge-reranker-v2-gemma",
-    "unicamp-dl/mt5-13b-mmarco-100k",
 ]
 
 CHUNK_SIZES = [(500, 100), (1000, 200), (2000, 500), (100000, 0)]

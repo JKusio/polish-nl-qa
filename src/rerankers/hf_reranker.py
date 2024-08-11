@@ -2,6 +2,7 @@ import json
 from typing import List
 
 from cache.cache import Cache
+from common.models_dimensions import RERANKER_MODEL_DIMENSIONS_MAP
 from common.passage import Passage
 from common.result import Result
 from common.utils import get_reranker_hash
@@ -12,7 +13,9 @@ from sentence_transformers import CrossEncoder
 class HFReranker(Reranker):
     def __init__(self, model_name: str, cache: Cache):
         self.model_name = model_name
-        self.model = CrossEncoder(model_name)
+        self.model = CrossEncoder(
+            model_name, max_length=RERANKER_MODEL_DIMENSIONS_MAP[model_name]
+        )
         self.cache = cache
 
         print(f"Vectorizer with model {model_name} initialized")

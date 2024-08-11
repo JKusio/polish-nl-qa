@@ -1,5 +1,12 @@
 import uuid
-from common.names import CHUNK_SIZES, DATASET_NAMES, DISTANCES, INDEX_NAMES, MODEL_NAMES
+from common.names import (
+    CHUNK_SIZES,
+    DATASET_NAMES,
+    DISTANCES,
+    INDEX_NAMES,
+    MODEL_NAMES,
+    OPENAI_EMBEDDING_MODEL_NAMES,
+)
 from common.passage import Passage
 import hashlib
 
@@ -85,6 +92,21 @@ def get_all_qdrant_model_combinations():
         (model, distance, dataset_key)
         for dataset_key in dataset_keys
         for model in MODEL_NAMES
+        for distance in DISTANCES
+    ]
+
+
+def get_all_openai_model_combinations():
+    dataset_keys = [
+        get_dataset_key(dataset_name, split)
+        for dataset_name in DATASET_NAMES
+        for split, _ in CHUNK_SIZES
+    ]
+
+    return [
+        (model, distance, dataset_key)
+        for dataset_key in dataset_keys
+        for model in OPENAI_EMBEDDING_MODEL_NAMES
         for distance in DISTANCES
     ]
 
