@@ -4,3 +4,4 @@ env
 output
 __pycache__
 .vscode
+openai_batches
