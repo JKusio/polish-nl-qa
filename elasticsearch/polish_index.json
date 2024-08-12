@@ -17,6 +17,13 @@
       },
       "dataset_key": {
         "type": "keyword"
+      },
+      "metadata": {
+        "properties": {
+          "passage_id": {
+            "type": "keyword" 
+          }
+        }
       }
     }
   }

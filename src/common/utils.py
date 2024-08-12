@@ -39,15 +39,19 @@ def get_vectorizer_hash(model: str, prompt: str):
     return "vectorizer:" + hashed
 
 
-def get_prompt_hash(model: str, dataset_key: str, prompt: str, distance: str):
+def get_prompt_hash(
+    model: str, dataset_key: str, prompt: str, distance: str, size: int
+):
     hashed = hashlib.sha256(
-        (model + dataset_key + prompt + distance).encode()
+        (model + dataset_key + prompt + distance + str(size)).encode()
     ).hexdigest()
     return "prompt:" + hashed
 
 
-def get_es_query_hash(index_name: str, dataset_key: str, query: str):
-    hashed = hashlib.sha256((index_name + dataset_key + query).encode()).hexdigest()
+def get_es_query_hash(index_name: str, dataset_key: str, query: str, size: int):
+    hashed = hashlib.sha256(
+        (index_name + dataset_key + query + str(size)).encode()
+    ).hexdigest()
     return "query:" + hashed
 
 

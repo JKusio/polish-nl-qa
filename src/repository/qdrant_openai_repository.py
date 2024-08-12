@@ -105,10 +105,10 @@ class QdrantOpenAIRepository(Repository):
             collection_name=self.collection_name, wait=True, points=points
         )
 
-    def find(self, query: str, dataset_key: str) -> Result:
+    def find(self, query: str, dataset_key: str, size: int = 10) -> Result:
         full_query = query
         hash_key = get_prompt_hash(
-            self.model_name, dataset_key, full_query, self.distance
+            self.model_name, dataset_key, full_query, self.distance, size
         )
 
         cached_value = self.cache.get(hash_key)
@@ -123,7 +123,7 @@ class QdrantOpenAIRepository(Repository):
         data = self.qdrant.search(
             collection_name=self.collection_name,
             query_vector=vector,
-            limit=10,
+            limit=size,
             query_filter=models.Filter(
                 must=[
                     models.FieldCondition(
