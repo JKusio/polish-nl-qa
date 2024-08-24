@@ -10,6 +10,8 @@ MODEL_NAMES = [
     "BAAI/bge-m3",
 ]
 
+QA_MODEL_NAMES = ["radlab/polish-qa-v2", "timpal0l/mdeberta-v3-base-squad2"]
+
 OPENAI_EMBEDDING_MODEL_NAMES = ["text-embedding-3-large"]
 
 QUERY_PREFIX_MAP = {

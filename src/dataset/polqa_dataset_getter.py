@@ -1,3 +1,4 @@
+import ast
 from typing import List
 from datasets import load_dataset
 from common.dataset_entry import DatasetEntry
@@ -26,7 +27,7 @@ class PolqaDatasetGetter(DatasetGetter):
                 passage,
                 self.dataset_name,
                 question,
-                answers,
+                ast.literal_eval(answers),
                 {
                     "question_formulation": question_formulation,
                     "question_type": question_type,
