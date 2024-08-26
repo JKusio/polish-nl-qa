@@ -1,3 +1,4 @@
+import string
 import uuid
 from common.names import (
     CHUNK_SIZES,
@@ -117,3 +118,9 @@ def get_all_openai_model_combinations():
 
 def get_query_with_prefix(query: str, prefix: str):
     return f"{prefix}{query}"
+
+
+def clean_text(text):
+    text = text.lower()
+    text = text.translate(str.maketrans("", "", string.punctuation))
+    return text

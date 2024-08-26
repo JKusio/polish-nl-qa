@@ -52,3 +52,9 @@ RERANKER_MODEL_NAMES = [
 ]
 
 CHUNK_SIZES = [(500, 100), (1000, 200), (2000, 500), (100000, 0)]
+
+NER_MODEL = "Babelscape/wikineural-multilingual-ner"
+
+HALLUCINATION_MODEL = "vectara/hallucination_evaluation_model"
+
+RERANKER_MODEL = "sdadas/polish-reranker-large-ranknet"
