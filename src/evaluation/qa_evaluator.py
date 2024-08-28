@@ -17,15 +17,27 @@ class QAEvaluator:
         answer_tokens = unified_answer.split()
         correct_answer_tokens = unified_correct_answer.split()
 
-        common_tokens = set(answer_tokens) & set(correct_answer_tokens)
+        common_tokens = 0
+        correct_answer_token_counts = {}
 
-        precision = (
-            len(correct_answer_tokens) / len(answer_tokens)
-            if len(answer_tokens) > 0
-            else 0
-        )
+        for token in correct_answer_tokens:
+            if token in correct_answer_token_counts:
+                correct_answer_token_counts[token] += 1
+            else:
+                correct_answer_token_counts[token] = 1
+
+        for token in answer_tokens:
+            if (
+                token in correct_answer_token_counts
+                and correct_answer_token_counts[token] > 0
+            ):
+                common_tokens += 1
+                correct_answer_token_counts[token] -= 1
+
+        precision = common_tokens / len(answer_tokens) if len(answer_tokens) > 0 else 0
+
         recall = (
-            len(common_tokens) / len(correct_answer_tokens)
+            common_tokens / len(correct_answer_tokens)
             if len(correct_answer_tokens) > 0
             else 0
         )

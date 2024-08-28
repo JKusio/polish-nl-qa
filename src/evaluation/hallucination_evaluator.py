@@ -10,6 +10,8 @@ from transformers import (
 )
 
 from common.passage import Passage
+from common.stopwords import STOPWORDS
+from common.utils import clean_text
 
 
 class HallucinationEvaluator:
@@ -18,7 +20,11 @@ class HallucinationEvaluator:
         ner_model = AutoModelForTokenClassification.from_pretrained(NER_MODEL)
 
         self.ner_pipeline = pipeline(
-            "ner", model=ner_model, tokenizer=ner_tokenizer, grouped_entities=True
+            "ner",
+            model=ner_model,
+            tokenizer=ner_tokenizer,
+            grouped_entities=True,
+            device="mps",
         )
 
         self.hallucination_model = AutoModelForSequenceClassification.from_pretrained(
@@ -51,11 +57,30 @@ class HallucinationEvaluator:
         results = self.reranker_model.predict(pairs)
         return max(results)
 
+    def calculate_common_tokens(self, answer: str, context: str) -> float:
+        answer_words = set(clean_text(answer.lower().split()))
+        context_words = set(clean_text(context.lower().split()))
+
+        stopwords_set = set(STOPWORDS)
+
+        removed_stopwords_answer = answer_words - stopwords_set
+        removed_context_stopwords = context_words - stopwords_set
+
+        common_words = removed_stopwords_answer & removed_context_stopwords
+        return (
+            len(common_words) / len(removed_stopwords_answer)
+            if len(removed_stopwords_answer) > 0
+            else 0
+        )
+
     def calculate(self, answer: str, passages: list[Passage]) -> float:
         context = " ".join([passage.context for passage in passages]).replace("\n", " ")
 
         ner_score = self.calculate_ner_score(answer, context)
         hallucination_score = self.calculate_hallucination_score(answer, context)
         reranker_score = self.calculate_reranker_score(answer, passages)
+        common_tokens_score = self.calculate_common_tokens(answer, context)
 
-        return ner_score * 0.33 + hallucination_score * 0.33 + reranker_score * 0.33
+        return (
+            ner_score + hallucination_score + reranker_score + common_tokens_score
+        ) / 4

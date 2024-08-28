@@ -203,11 +203,6 @@ class QdrantRepository(Repository):
         joined_passage_ids = ",".join(map(str, sorted_passage_ids))
         hash_key = get_relevant_document_count_hash(joined_passage_ids, dataset_key)
 
-        cached_value = self.cache.get(hash_key)
-
-        if cached_value:
-            return int(cached_value)
-
         is_poquad = True if "poquad" in dataset_key else False
 
         must = [
@@ -221,13 +216,13 @@ class QdrantRepository(Repository):
             must.append(
                 models.FieldCondition(
                     key="id",
-                    match=models.MatchAny(any=sorted_passage_ids),
+                    match=models.MatchValue(value=sorted_passage_ids[0]),
                 )
             )
         else:
             must.append(
                 models.FieldCondition(
-                    key="metadata.passage_id",
+                    key="id",
                     match=models.MatchAny(any=sorted_passage_ids),
                 )
             )
@@ -237,6 +232,9 @@ class QdrantRepository(Repository):
             count_filter=models.Filter(must=must),
             exact=True,
         )
+
+        print(must)
+        print(result)
 
         self.cache.set(hash_key, str(result.count))
 

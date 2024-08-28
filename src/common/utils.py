@@ -70,6 +70,11 @@ def get_relevant_document_count_hash(passage_id: str, dataset_key: str):
     return "count:" + hashed
 
 
+def get_generator_hash(query: str, context: str, type: str):
+    hashed = hashlib.sha256((query + context + type).encode()).hexdigest()
+    return "generator:" + hashed
+
+
 def get_dataset_key(dataset_name: str, split: str):
     return replace_slash_with_dash(f"{dataset_name}-{split}")
 
@@ -124,3 +129,32 @@ def clean_text(text):
     text = text.lower()
     text = text.translate(str.maketrans("", "", string.punctuation))
     return text
+
+
+def split_text_into_token_chunks(text, tokenizer, max_length, overlap):
+    tokens = tokenizer.encode(text, add_special_tokens=False)
+
+    chunks = []
+    for i in range(0, len(tokens), max_length - overlap):
+        chunk = tokens[i : i + max_length]
+        chunks.append(chunk)
+
+        if len(chunk) < max_length:
+            break
+
+    text_chunks = [tokenizer.decode(chunk) for chunk in chunks]
+
+    return text_chunks
+
+
+def split_into_chunks(text, max_length, overlap):
+    chunks = []
+    start = 0
+    while start < len(text):
+        end = start + max_length
+        chunk = text[start:end]
+        chunks.append(chunk)
+        if end >= len(text):
+            break
+        start = end - overlap  # overlap for context
+    return chunks

@@ -9,17 +9,28 @@ class PolqaDatasetGetter(DatasetGetter):
     def __init__(self) -> None:
         self.dataset_name = "ipipan/polqa"
 
+    def get_unique_questions(self, entries: list[DatasetEntry]) -> List[DatasetEntry]:
+        unique_questions = set()
+        unique_entries: list[DatasetEntry] = []
+
+        for entry in entries:
+            if entry.question not in unique_questions:
+                unique_questions.add(entry.question)
+                unique_entries.append(entry)
+
+        return unique_entries
+
     def get_training_dataset(self) -> List[DatasetEntry]:
         dataset = load_dataset(self.dataset_name, split="train", trust_remote_code=True)
-        return self._convert_to_dict(dataset)
+        return self.get_unique_questions(self._convert_from_dict(dataset))
 
     def get_test_dataset(self) -> List[DatasetEntry]:
         dataset = load_dataset(
             self.dataset_name, split="validation", trust_remote_code=True
         )
-        return self._convert_to_dict(dataset)
+        return self.get_unique_questions(self._convert_from_dict(dataset))
 
-    def _convert_to_dict(self, dataset) -> List[DatasetEntry]:
+    def _convert_from_dict(self, dataset) -> List[DatasetEntry]:
         return [
             DatasetEntry(
                 id,

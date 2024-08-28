@@ -190,11 +190,6 @@ class QdrantOpenAIRepository(Repository):
         joined_passage_ids = ",".join(map(str, sorted_passage_ids))
         hash_key = get_relevant_document_count_hash(joined_passage_ids, dataset_key)
 
-        cached_value = self.cache.get(hash_key)
-
-        if cached_value:
-            return int(cached_value)
-
         is_poquad = True if "poquad" in dataset_key else False
 
         must = [
