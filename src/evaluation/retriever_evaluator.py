@@ -5,7 +5,7 @@ from common.passage import Passage
 from common.result import Result
 
 
-class PoquadRetrieverEvaluator:
+class RetrieverEvaluator:
     # Calculate NDCG for top 10 results
     def calculate_ndcg(self, result: Result, correct_passage_id: str) -> float:
         relevances = [

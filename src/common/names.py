@@ -13,7 +13,7 @@ MODEL_NAMES = [
 QA_MODEL_NAMES = ["radlab/polish-qa-v2", "timpal0l/mdeberta-v3-base-squad2"]
 
 INST_MODEL_PATHS = [
-    "../../models/Bielik-7B-Instruct-v0.1-q4",
+    "../../models/Bielik-11B-v2.2-Instruct-q4",
     "../../models/Mistral-7B-Instruct-v0.2-q4",
 ]
 
@@ -58,3 +58,5 @@ NER_MODEL = "Babelscape/wikineural-multilingual-ner"
 HALLUCINATION_MODEL = "vectara/hallucination_evaluation_model"
 
 RERANKER_MODEL = "sdadas/polish-reranker-large-ranknet"
+
+DATASET_SEED = "1234567890"

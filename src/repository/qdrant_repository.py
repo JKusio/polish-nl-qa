@@ -198,43 +198,25 @@ class QdrantRepository(Repository):
             query_prefix,
         )
 
-    def count_relevant_documents(self, passage_ids, dataset_key) -> int:
-        sorted_passage_ids = sorted(passage_ids)
-        joined_passage_ids = ",".join(map(str, sorted_passage_ids))
-        hash_key = get_relevant_document_count_hash(joined_passage_ids, dataset_key)
-
-        is_poquad = True if "poquad" in dataset_key else False
+    def count_relevant_documents(self, passage_id, dataset_key) -> int:
+        hash_key = get_relevant_document_count_hash(passage_id, dataset_key)
 
         must = [
             models.FieldCondition(
                 key="dataset_key",
                 match=models.MatchValue(value=dataset_key),
-            )
+            ),
+            models.FieldCondition(
+                key="id",
+                match=models.MatchValue(value=passage_id),
+            ),
         ]
-
-        if is_poquad:
-            must.append(
-                models.FieldCondition(
-                    key="id",
-                    match=models.MatchValue(value=sorted_passage_ids[0]),
-                )
-            )
-        else:
-            must.append(
-                models.FieldCondition(
-                    key="id",
-                    match=models.MatchAny(any=sorted_passage_ids),
-                )
-            )
 
         result = self.qdrant.count(
             collection_name=self.collection_name,
             count_filter=models.Filter(must=must),
             exact=True,
         )
-
-        print(must)
-        print(result)
 
         self.cache.set(hash_key, str(result.count))
 

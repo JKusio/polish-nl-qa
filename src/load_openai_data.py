@@ -26,8 +26,8 @@ def main():
     client = QdrantClient(host="localhost", port=6333)
     cache = Cache()
 
-    # for distance in DISTANCES:
-    #     insert_passage_data(client, distance, cache)
+    for distance in DISTANCES:
+        insert_passage_data(client, distance, cache)
 
     insert_query_cache(cache)
 
@@ -51,7 +51,6 @@ def insert_passage_data(
     cache: Cache,
 ):
     model_name = "text-embedding-3-large"
-    collection_name = get_qdrant_collection_name(model_name, distance)
 
     passage_filenames = [
         f
@@ -65,11 +64,10 @@ def insert_passage_data(
                 chunk_size, chunk_overlap, dataset_name
             )
 
-            repository = QdrantOpenAIRepository(
+            repository = QdrantOpenAIRepository.get_repository(
                 client,
-                collection_name,
                 model_name,
-                VectorParams(size=MODEL_DIMENSIONS_MAP[model_name], distance=distance),
+                distance,
                 cache,
             )
 

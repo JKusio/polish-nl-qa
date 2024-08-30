@@ -28,7 +28,7 @@ class PassageFactory:
 
         return unique_entries
 
-    def get_passages(self, length=1000) -> List[Passage]:
+    def get_passages(self, length=1000000000) -> List[Passage]:
         dataset = self.dataset_getter.get_test_dataset()
         unique_entries = self._get_unique_entries(dataset)
 

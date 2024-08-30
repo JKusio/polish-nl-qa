@@ -81,21 +81,10 @@ class ESRepository(Repository):
         body = {"query": {"match": {"text": query}}}
         return self.client.delete_by_query(index=self.index_name, body=body)
 
-    def count_relevant_documents(self, passage_ids: list[str], dataset_key: str) -> int:
-        sorted_passage_ids = sorted(passage_ids)
-        joined_passage_ids = ",".join(map(str, sorted_passage_ids))
-        hash_key = get_relevant_document_count_hash(joined_passage_ids, dataset_key)
+    def count_relevant_documents(self, passage_id: str, dataset_key: str) -> int:
+        hash_key = get_relevant_document_count_hash(passage_id, dataset_key)
 
-        is_poquad = True if "poquad" in dataset_key else False
-
-        must = [
-            {"match": {"dataset_key": dataset_key}},
-        ]
-
-        if is_poquad:
-            must.append({"match": {"id": passage_ids[0]}})
-        else:
-            must.append({"terms": {"metadata.passage_id": passage_ids}})
+        must = [{"match": {"dataset_key": dataset_key}}, {"match": {"id": passage_id}}]
 
         body = {
             "query": {"bool": {"must": must}},
