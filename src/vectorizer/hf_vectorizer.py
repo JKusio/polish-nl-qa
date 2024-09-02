@@ -33,3 +33,6 @@ class HFVectorizer(Vectorizer):
         self.cache.set(hash_key, vector_json)
 
         return hashed_vector
+
+    def get_similarity(self, vector1: Any, vector2: Any) -> float:
+        return self.model.similarity(vector1, vector2)

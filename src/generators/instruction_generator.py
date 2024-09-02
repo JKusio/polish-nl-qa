@@ -1,7 +1,7 @@
 from sqlalchemy import all_
 from cache.cache import Cache
 from common.passage import Passage
-from common.utils import get_generator_hash, split_text_into_token_chunks
+from common.utils import clean_text, get_generator_hash, split_text_into_token_chunks
 from generators.generator import Generator
 from mlx_lm import load, generate
 
@@ -14,7 +14,7 @@ class InstructionGenerator(Generator):
 
         self.model = model
         self.tokenizer = tokenizer
-        self.max_tokens = 450 if "Bielik" in model_name else 16000
+        self.max_tokens = 420
 
         self.cache = cache
 
@@ -36,7 +36,10 @@ class InstructionGenerator(Generator):
             """
 
             response = generate(
-                self.model, self.tokenizer, prompt=prompt, max_tokens=200
+                self.model,
+                self.tokenizer,
+                prompt=prompt,
+                max_tokens=150,
             )
             stripped_response = (
                 response.replace("<s>", "")
@@ -49,7 +52,7 @@ class InstructionGenerator(Generator):
 
         answer = None
 
-        if i > 2:
+        if i > 3:
             return all_answers[0]
 
         if len(chunks) == 1:
@@ -61,12 +64,12 @@ class InstructionGenerator(Generator):
 
             answer = self.chunk_and_generate(query, all_answer_context, i + 1)
 
-        return answer
+        return clean_text(answer)
 
     def generate_answer(self, query: str, passages: list[Passage]) -> str:
         context = " ".join([passage.context for passage in passages]).replace("\n", " ")
 
-        hash_key = get_generator_hash(query, context, "instruction")
+        hash_key = get_generator_hash(query, context, "instruction", self.model_name)
 
         cached_value = self.cache.get(hash_key)
 

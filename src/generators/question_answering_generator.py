@@ -27,7 +27,9 @@ class QuestionAnsweringGenerator(Generator):
     def generate_answer(self, query: str, passages: list[Passage]) -> str:
         context = " ".join([passage.context for passage in passages]).replace("\n", " ")
 
-        hash_key = get_generator_hash(query, context, "question_answering")
+        hash_key = get_generator_hash(
+            query, context, "question_answering", self.model_name
+        )
 
         cached_value = self.cache.get(hash_key)
 
@@ -43,5 +45,7 @@ class QuestionAnsweringGenerator(Generator):
             all_answers.append(result)
 
         best_answer = max(all_answers, key=lambda x: x["score"])
+
+        self.cache.set(hash_key, clean_text(best_answer["answer"]))
 
         return clean_text(best_answer["answer"])

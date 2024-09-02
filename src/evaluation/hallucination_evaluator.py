@@ -1,5 +1,6 @@
-from regex import P
 from sentence_transformers import CrossEncoder
+from cache import cache
+from cache.cache import Cache
 from common.models_dimensions import RERANKER_MODEL_DIMENSIONS_MAP
 from common.names import HALLUCINATION_MODEL, NER_MODEL, RERANKER_MODEL
 from transformers import (
@@ -8,14 +9,19 @@ from transformers import (
     pipeline,
     AutoModelForSequenceClassification,
 )
-
 from common.passage import Passage
-from common.stopwords import STOPWORDS
-from common.utils import clean_text
+from common.utils import (
+    get_answer_reranker_hash,
+    get_halucination_hash,
+    get_ner_hash,
+    get_query_reranker_hash,
+    get_query_to_passages_reranker_hash,
+)
 
 
 class HallucinationEvaluator:
-    def __init__(self):
+    def __init__(self, cache: Cache):
+        self.cache = cache
         ner_tokenizer = AutoTokenizer.from_pretrained(NER_MODEL)
         ner_model = AutoModelForTokenClassification.from_pretrained(NER_MODEL)
 
@@ -36,6 +42,12 @@ class HallucinationEvaluator:
         )
 
     def calculate_ner_score(self, answer: str, context: str) -> float:
+        hash_key = get_ner_hash(answer, context)
+        cached_score = self.cache.get(hash_key)
+
+        if cached_score:
+            return cached_score
+
         answer_entities = self.ner_pipeline(answer)
         context_entities = self.ner_pipeline(context)
 
@@ -44,43 +56,93 @@ class HallucinationEvaluator:
 
         common_words = set(answer_words) & set(context_words)
 
-        return len(common_words) / len(answer_words) if len(answer_words) > 0 else 0
+        score = float(
+            len(common_words) / len(answer_words) if len(answer_words) > 0 else 0
+        )
+
+        self.cache.set(hash_key, score)
+
+        return score
 
     def calculate_hallucination_score(self, answer: str, context: str) -> float:
+        hash_key = get_halucination_hash(answer, context)
+        cached_score = self.cache.get(hash_key)
+
+        if cached_score:
+            return cached_score
+
         pairs = [[context, answer]]
         results = self.hallucination_model.predict(pairs)
 
-        return results[0].item()
+        score = float(results[0].item())
+        self.cache.set(hash_key, score)
 
-    def calculate_reranker_score(self, answer: str, passages: list[Passage]) -> float:
+        return score
+
+    def calculate_answer_reranker_score(
+        self, answer: str, passages: list[Passage]
+    ) -> float:
+        hash_key = get_answer_reranker_hash(answer, passages)
+        cached_score = self.cache.get(hash_key)
+
+        if cached_score:
+            return cached_score
+
         pairs = [[answer, passage.context] for passage in passages]
         results = self.reranker_model.predict(pairs)
-        return max(results)
 
-    def calculate_common_tokens(self, answer: str, context: str) -> float:
-        answer_words = set(clean_text(answer.lower().split()))
-        context_words = set(clean_text(context.lower().split()))
+        score = float(max(results))
+        self.cache.set(hash_key, score)
 
-        stopwords_set = set(STOPWORDS)
+        return score
 
-        removed_stopwords_answer = answer_words - stopwords_set
-        removed_context_stopwords = context_words - stopwords_set
+    def calculate_query_reranker_score(self, query: str, answer: str) -> float:
+        hash_key = get_query_reranker_hash(query, answer)
+        cached_score = self.cache.get(hash_key)
 
-        common_words = removed_stopwords_answer & removed_context_stopwords
-        return (
-            len(common_words) / len(removed_stopwords_answer)
-            if len(removed_stopwords_answer) > 0
-            else 0
-        )
+        if cached_score:
+            return cached_score
 
-    def calculate(self, answer: str, passages: list[Passage]) -> float:
+        pairs = [[query, answer]]
+        results = self.reranker_model.predict(pairs)
+
+        score = float(max(results))
+        self.cache.set(hash_key, score)
+
+        return score
+
+    def calculate_query_to_passages_score(
+        self, query: str, passages: list[Passage]
+    ) -> float:
+        hash_key = get_query_to_passages_reranker_hash(query, passages)
+        cached_score = self.cache.get(hash_key)
+
+        if cached_score:
+            return cached_score
+
+        pairs = [[query, passage.context] for passage in passages]
+        results = self.reranker_model.predict(pairs)
+
+        score = float(max(results))
+        self.cache.set(hash_key, score)
+
+        return score
+
+    def calculate(self, query: str, answer: str, passages: list[Passage]) -> float:
         context = " ".join([passage.context for passage in passages]).replace("\n", " ")
 
         ner_score = self.calculate_ner_score(answer, context)
         hallucination_score = self.calculate_hallucination_score(answer, context)
-        reranker_score = self.calculate_reranker_score(answer, passages)
-        common_tokens_score = self.calculate_common_tokens(answer, context)
+        answer_reranker_score = self.calculate_answer_reranker_score(answer, passages)
+        query_reranker_score = self.calculate_query_reranker_score(query, answer)
+        query_to_passages_score = self.calculate_query_to_passages_score(
+            query, passages
+        )
 
         return (
-            ner_score + hallucination_score + reranker_score + common_tokens_score
-        ) / 4
+            ner_score * 0.2
+            + hallucination_score * 0.5
+            + answer_reranker_score * 0.10
+            + query_reranker_score * 0.10
+            + query_to_passages_score * 0.10
+        )

@@ -5,7 +5,7 @@ client = MongoClient("mongodb://localhost:27017/")
 db = client["polish-nl-qa"]
 collection_name = "key_value"
 # prefixes = ["count", "vectorizer", "prompt", "reranker", "query", "score", "generator"]
-prefixes = ["count", "vectorizer", "prompt", "reranker", "query", "score", "generator"]
+prefixes = []
 collection = db[collection_name]
 
 for prefix in prefixes:

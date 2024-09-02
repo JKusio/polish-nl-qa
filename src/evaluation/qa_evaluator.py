@@ -4,13 +4,13 @@ from common.result import Result
 
 
 class QAEvaluator:
-    def calculate_em(self, answer: str, correct_answer) -> float:
+    def calculate_em(self, answer: str, correct_answer: list[str]) -> float:
         unified_answer = answer.lower().strip()
-        unified_correct_answer = correct_answer.lower().strip()
+        unified_correct_answer = [ans.lower().strip() for ans in correct_answer]
 
-        return 1 if unified_answer == unified_correct_answer else 0
+        return 1 if unified_answer in unified_correct_answer else 0
 
-    def calculate_f1_score(self, answer: str, correct_answer) -> float:
+    def calculate_f1_for_single_answer(self, answer: str, correct_answer: str) -> float:
         unified_answer = answer.lower().strip()
         unified_correct_answer = correct_answer.lower().strip()
 
@@ -49,3 +49,11 @@ class QAEvaluator:
         )
 
         return f1_score
+
+    def calculate_f1_score(self, answer: str, correct_answers: list[str]) -> float:
+        f1_scores = [
+            self.calculate_f1_for_single_answer(answer, correct_answer)
+            for correct_answer in correct_answers
+        ]
+
+        return max(f1_scores)

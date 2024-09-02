@@ -70,9 +70,34 @@ def get_relevant_document_count_hash(passage_id: str, dataset_key: str):
     return "count:" + hashed
 
 
-def get_generator_hash(query: str, context: str, type: str):
-    hashed = hashlib.sha256((query + context + type).encode()).hexdigest()
+def get_generator_hash(query: str, context: str, type: str, model: str):
+    hashed = hashlib.sha256((query + context + type + model).encode()).hexdigest()
     return "generator:" + hashed
+
+
+def get_ner_hash(answer: str, context: str):
+    hashed = hashlib.sha256((answer + context).encode()).hexdigest()
+    return "ner:" + hashed
+
+
+def get_halucination_hash(answer: str, context: str):
+    hashed = hashlib.sha256((answer + context).encode()).hexdigest()
+    return "halucination:" + hashed
+
+
+def get_answer_reranker_hash(answer: str, passages: list[Passage]):
+    hashed = hashlib.sha256((answer + str(passages)).encode()).hexdigest()
+    return "answer_reranker:" + hashed
+
+
+def get_query_reranker_hash(query: str, answer: str):
+    hashed = hashlib.sha256((query + answer).encode()).hexdigest()
+    return "query_reranker:" + hashed
+
+
+def get_query_to_passages_reranker_hash(query: str, passages: list[Passage]):
+    hashed = hashlib.sha256((query + str(passages)).encode()).hexdigest()
+    return "query_to_passages_reranker:" + hashed
 
 
 def get_dataset_key(dataset_name: str, split: str):

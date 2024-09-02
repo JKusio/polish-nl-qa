@@ -24,3 +24,6 @@ class OpenAIVectorizer(Vectorizer):
             return hashed_vector
 
         return []
+
+    def get_similarity(self, vector1: Any, vector2: Any) -> float:
+        return 0.0
