@@ -11,6 +11,8 @@ from common.names import (
 from common.passage import Passage
 import hashlib
 
+from common.result import Result
+
 
 def get_passages_for_embedding(dataset):
     unique_contexts = set((row["title"], row["context"]) for row in dataset)
@@ -75,19 +77,21 @@ def get_generator_hash(query: str, context: str, type: str, model: str):
     return "generator:" + hashed
 
 
-def get_ner_hash(answer: str, context: str):
+def get_faithfulness_hash(answer: str, context: str):
     hashed = hashlib.sha256((answer + context).encode()).hexdigest()
-    return "ner:" + hashed
+    return "faithfulness:" + hashed
 
 
-def get_halucination_hash(answer: str, context: str):
-    hashed = hashlib.sha256((answer + context).encode()).hexdigest()
-    return "halucination:" + hashed
+def get_answer_relevance_hash(original_question: str, answer: str):
+    hashed = hashlib.sha256((original_question + answer).encode()).hexdigest()
+    return "answer_relevance:" + hashed
 
 
-def get_answer_reranker_hash(answer: str, passages: list[Passage]):
-    hashed = hashlib.sha256((answer + str(passages)).encode()).hexdigest()
-    return "answer_reranker:" + hashed
+def get_query_to_context_relevance_hash(result: Result):
+    hashed = hashlib.sha256(
+        (result.query + str([passage for (passage, _) in result.passages])).encode()
+    ).hexdigest()
+    return "query_to_context_relevance:" + hashed
 
 
 def get_query_reranker_hash(query: str, answer: str):

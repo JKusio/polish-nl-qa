@@ -10,8 +10,9 @@ from sentence_transformers import SentenceTransformer
 
 class HFVectorizer(Vectorizer):
     def __init__(self, model_name: str, cache: Cache):
+        self.device = "mps"
         self.model_name = model_name
-        self.model = SentenceTransformer(model_name)
+        self.model = SentenceTransformer(model_name, device=self.device)
         self.max_seq_length = self.model.max_seq_length
         self.cache = cache
 
@@ -32,7 +33,7 @@ class HFVectorizer(Vectorizer):
         vector_json = json.dumps(vector_list)
         self.cache.set(hash_key, vector_json)
 
-        return hashed_vector
+        return hashed_vector.to(self.device)
 
     def get_similarity(self, vector1: Any, vector2: Any) -> float:
-        return self.model.similarity(vector1, vector2)
+        return self.model.similarity(vector1.to(self.device), vector2.to(self.device))
