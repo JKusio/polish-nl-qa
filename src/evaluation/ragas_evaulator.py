@@ -123,7 +123,6 @@ class RAGASEvaluator:
             return float(maybe_answer_relevance)
 
         prompt = f"""
-            [INST]
             Na podstawie podanego kontekstu wygeneruj trzy pytania, które mogłyby zostać zadane w kontekście tego tekstu.
             Zwróć pytania w formacie
             1. Pierwsze pytanie
@@ -132,8 +131,10 @@ class RAGASEvaluator:
             
             Każde pytanie musi być zakończone kropką i znajdować się w osobnej linii. Zwróć tylko pytania z numerami 1, 2 i 3.
             
-            Kontekst: {answer.replace("\n", " ")}
-            [/INST]
+            ### Kontekst: 
+            {answer.replace("\n", " ")}
+        
+            ### Pytania:
         """
 
         generated_questions = generate(

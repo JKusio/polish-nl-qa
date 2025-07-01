@@ -8,7 +8,7 @@ ipywidgets
 datasets
 accelerate
 qdrant-client
-elasticsearch
+elasticsearch>=8.0.0,<9.0.0
 python-dotenv
 evaluate
 langchain

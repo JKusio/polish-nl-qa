@@ -14,7 +14,7 @@ class InstructionGenerator(Generator):
 
         self.model = model
         self.tokenizer = tokenizer
-        self.max_tokens = 420
+        self.max_tokens = 100000
 
         self.cache = cache
 
@@ -27,19 +27,22 @@ class InstructionGenerator(Generator):
 
         for chunk in chunks:
             prompt = f"""
-            [INST]
-            Wygeneruj krótką odpowiedź na pytanie wyłącznie na podstawie poniższego kontekstu:
+            Odpowiedz na pytanie użytkownika wykorzystując tylko informacje znajdujące się w dokumentach, a nie wcześniejszą wiedzę. Udziel wysokiej jakości, poprawnej gramatycznie odpowiedzi w języku polskim. Jeżeli w dokumentach nie ma informacji potrzebnych do odpowiedzi na pytanie, zamiast odpowiedzi zwróć tekst: "Nie udało mi się odnaleźć odpowiedzi na pytanie".
+          
+            ### Dokumenty:
             {chunk}
-
-            Pytanie: {query}
-            [/INST]
+            
+            ### Pytanie: 
+            {query}
+            
+            ### Odpowiedź:
             """
 
             response = generate(
                 self.model,
                 self.tokenizer,
                 prompt=prompt,
-                max_tokens=150,
+                max_tokens=300,
             )
             stripped_response = (
                 response.replace("<s>", "")

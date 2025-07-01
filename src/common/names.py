@@ -15,6 +15,8 @@ QA_MODEL_NAMES = ["radlab/polish-qa-v2", "timpal0l/mdeberta-v3-base-squad2"]
 INST_MODEL_PATHS = [
     "../../models/Bielik-11B-v2.2-Instruct-q4",
     "../../models/Mistral-7B-Instruct-v0.2-q4",
+    "../../models/PLLuM-12-B-instruct-q4",
+    "../../models/PLLuM-8B-instruct-q4",
 ]
 
 OPENAI_EMBEDDING_MODEL_NAMES = ["text-embedding-3-large"]
