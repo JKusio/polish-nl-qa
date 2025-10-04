@@ -79,19 +79,19 @@ def get_generator_hash(query: str, context: str, type: str, model: str):
 
 def get_faithfulness_hash(answer: str, context: str):
     hashed = hashlib.sha256((answer + context).encode()).hexdigest()
-    return "faithfulness:" + hashed
+    return "faithfulness_v2:" + hashed
 
 
 def get_answer_relevance_hash(original_question: str, answer: str):
     hashed = hashlib.sha256((original_question + answer).encode()).hexdigest()
-    return "answer_relevance:" + hashed
+    return "answer_relevance_v2:" + hashed
 
 
 def get_query_to_context_relevance_hash(result: Result):
     hashed = hashlib.sha256(
         (result.query + str([passage for (passage, _) in result.passages])).encode()
     ).hexdigest()
-    return "query_to_context_relevance:" + hashed
+    return "query_to_context_relevance_v2:" + hashed
 
 
 def get_query_reranker_hash(query: str, answer: str):
