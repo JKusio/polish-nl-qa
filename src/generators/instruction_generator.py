@@ -25,7 +25,7 @@ class InstructionGenerator(Generator):
         ### Pytanie: 
         {query}
 
-        ### Odpowiedź:"""
+        ### Odpowiedź (tylko sama odpowiedź bez wyjaśnień):"""
 
         response = generate(
             self.model,
@@ -47,7 +47,7 @@ class InstructionGenerator(Generator):
     def generate_answer(self, query: str, passages: list[Passage]) -> str:
         context = " ".join([passage.context for passage in passages]).replace("\n", " ")
 
-        hash_key = get_generator_hash(query, context, "instruction_v2", self.model_name)
+        hash_key = get_generator_hash(query, context, "instruction_v3", self.model_name)
 
         cached_value = self.cache.get(hash_key)
 
