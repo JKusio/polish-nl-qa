@@ -19,5 +19,7 @@ class OpenAIGenerator(Generator):
         if cached_value:
             return cached_value
 
-        print("WARNING! DID NOT FOUND CACHED VALUE FOR KEY:", hash_key)
+        print(f"WARNING! GPT answer not found in cache for key: {hash_key[:50]}...")
+        print(f"Question: {query[:100]}...")
+        print("Make sure to load OpenAI batch results to cache first!")
         return ""
